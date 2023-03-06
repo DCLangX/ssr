@@ -1,13 +1,13 @@
 import { join } from 'path'
-import { IConfig } from 'ssr-types'
+import { IConfig, UserConfig } from 'ssr-types'
 import { getCwd, getUserConfig, getFeDir, judgeFramework, loadModuleFromFramework, stringifyDefine, accessFileSync } from './cwd'
 import { coerce, SemVer } from 'semver'
 import { normalizeStartPath, normalizeEndPath } from '../common'
 
 const loadConfig = (): IConfig => {
+  const cwd = getCwd()
   const framework = judgeFramework()
   const userConfig = getUserConfig()
-  const cwd = getCwd()
   const mode = 'ssr'
   const stream = false
   const isVite = accessFileSync(join(cwd, './build/tag.json'))
@@ -19,6 +19,9 @@ const loadConfig = (): IConfig => {
   const vueClientEntry = join(cwd, './node_modules/ssr-plugin-vue/esm/entry/client-entry.js')
   const reactServerEntry = join(cwd, './node_modules/ssr-plugin-react/esm/entry/server-entry.js')
   const reactClientEntry = join(cwd, './node_modules/ssr-plugin-react/esm/entry/client-entry.js')
+  const react18ServerEntry = join(cwd, './node_modules/ssr-plugin-react18/esm/entry/server-entry.js')
+  const react18ClientEntry = join(cwd, './node_modules/ssr-plugin-react18/esm/entry/client-entry.js')
+
   const supportOptinalChaining = coerce(process.version)!.major >= 14
   const define = userConfig.define ?? {}
   userConfig.define && stringifyDefine(define)
@@ -120,11 +123,7 @@ const loadConfig = (): IConfig => {
     ...userConfig.corejsOptions
   } : {}
 
-  const getOutput = () => ({
-    clientOutPut: join(cwd, './build/client'),
-    serverOutPut: join(cwd, './build/server')
-  })
-  const writeDebounceTime = 1000
+  const writeDebounceTime = 2000
   const webpackDevServerConfig = Object.assign({
     stats: webpackStatsOption,
     disableInfo: true, // 关闭webpack-dev-server 自带的server Info信息
@@ -154,9 +153,9 @@ const loadConfig = (): IConfig => {
   const chainServerConfig = () => {
     // 覆盖默认 server webpack配置
   }
-
+  const assetsDir = userConfig.assetsDir ?? 'static'
   const manifestPath = `${normalizeEndPath(devPublicPath)}asset-manifest.json`
-  const staticPath = `${normalizeEndPath(devPublicPath)}static`
+  const staticPath = `${normalizeEndPath(devPublicPath)}${assetsDir}`
   const hotUpdatePath = `${normalizeEndPath(devPublicPath)}*.hot-update**`
   const proxyKey = [staticPath, hotUpdatePath, manifestPath]
   const prefix = '/'
@@ -165,12 +164,18 @@ const loadConfig = (): IConfig => {
     assetManifest: join(cwd, './build/client/asset-manifest.json'),
     asyncChunkMap: join(cwd, './build/asyncChunkMap.json')
   }
+  const babelExtraModule: UserConfig['babelExtraModule'] = [
+    /ssr-plugin-vue3/, /ssr-client-utils/, /ssr-hoc-vue/, /vue/, /ssr-common-utils/, /ssr-plugin-vue/, /ssr-plugin-react/,
+    /ssr-hoc-react/, /ssr-hoc-vue3/, /ssr-hoc-react18/
+  ]
+  const getOutput = () => {}
   const config = Object.assign({}, {
     chainBaseConfig,
     chainServerConfig,
     chainClientConfig,
     cwd,
     isDev,
+    getOutput,
     publicPath,
     useHash,
     host,
@@ -180,7 +185,6 @@ const loadConfig = (): IConfig => {
     chunkName,
     jsOrder,
     cssOrder,
-    getOutput,
     webpackStatsOption,
     dynamic,
     mode,
@@ -194,6 +198,8 @@ const loadConfig = (): IConfig => {
     vueClientEntry,
     reactServerEntry,
     reactClientEntry,
+    react18ServerEntry,
+    react18ClientEntry,
     isVite,
     whiteList,
     isCI,
@@ -202,8 +208,15 @@ const loadConfig = (): IConfig => {
     prefix,
     optimize,
     writeDebounceTime,
-    dynamicFile
+    dynamicFile,
+    babelExtraModule
   }, userConfig)
+
+  config.getOutput = () => ({
+    clientOutPut: join(cwd, './build/client'),
+    serverOutPut: join(cwd, './build/server')
+  })
+  config.assetsDir = assetsDir
   config.alias = alias
   config.prefix = normalizeStartPath(config.prefix ?? '/')
   config.corejsOptions = corejsOptions

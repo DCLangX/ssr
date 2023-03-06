@@ -1,4 +1,4 @@
-import type { Options, RuleSetCondition, compilation } from 'webpack'
+import type { Options, compilation } from 'webpack'
 import type WebpackChainConfig from 'webpack-chain'
 import type { PluginOption, ServerOptions, UserConfig as ViteConfig, CSSOptions } from 'vite'
 import type { Plugin as PostCssPlugin } from 'postcss'
@@ -46,6 +46,7 @@ export interface IConfig {
     clientOutPut: string
     serverOutPut: string
   }
+  assetsDir?: string
   proxy?: any
   cssOrder: string[]
   jsOrder: string[]
@@ -87,7 +88,7 @@ export interface IConfig {
   corejs?: boolean
   corejsOptions?: Object
   https: boolean | object
-  babelExtraModule?: RuleSetCondition
+  babelExtraModule?: RegExp[]
   routerPriority?: Record<string, number>
   routerOptimize?: {
     include?: string[]
@@ -103,9 +104,13 @@ export interface IConfig {
   vueClientEntry: string
   reactServerEntry: string
   reactClientEntry: string
+  react18ServerEntry: string
+  react18ClientEntry: string
   isVite: boolean
   optimize: boolean
   supportOptinalChaining: boolean
+  onError?: (e: any) => (null|string)
+  onReady?: () => any
   viteConfig?: () => {
     common?: {
       // 双端通用配置
@@ -133,7 +138,9 @@ export interface IConfig {
     client?: Record<string, string>
     server?: Record<string, string>
   }
-  babelOptions?: RollupBabelInputPluginOptions
+  babelOptions?: RollupBabelInputPluginOptions & {
+    include?: RegExp[]
+  }
   hashRouter?: boolean
   htmlTemplate?: string
   writeDebounceTime: number
@@ -171,5 +178,12 @@ export interface IPlugin {
     start?: (argv?: Argv) => void
     build?: (argv?: Argv) => void
     deploy?: (argv?: Argv) => void
+  }
+}
+
+export interface Vue3RenderRes {
+  html: string
+  teleportsContext: {
+    teleports?: Record<string, string> | undefined
   }
 }

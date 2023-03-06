@@ -158,7 +158,7 @@ class Page {
 开发者或许需要针对某些页面进行服务端渲染，某些页面不需要。得益于 `ssr` 的强大设计，此功能完全不需要框架底层支持，直接在业务代码实现即可。
 
 ```js
-import { render } from 'ssr-core-vue3'
+import { render } from 'ssr-core'
 // 开发者可以在 controller 中根据不同的 path 使用不同的运行配置来决定当前的渲染模式
 
 @Controller('/detail')
@@ -174,12 +174,10 @@ const stream = await render<Readable>(this.ctx, {
 
 #### 通过 core 模块提供的 render 方法降级
 
-`ssr-core-react` 和 `ssr-core-vue` 模块均支持该方式  
-
 在应用执行出错 catch 到 error 的时候降级为客户端渲染。也可根据具体的业务逻辑，在适当的时候通过该方式降级 `csr` 模式
 
 ```js
-import { render } from 'ssr-core-react'
+import { render } from 'ssr-core'
 
 try {
   const htmlStr = await render(this.ctx)
@@ -283,7 +281,7 @@ async handler (): Promise<void> {
 
 由于 `ssr` 场景我们需要开启 `external` 选项，我们需要将 `node_modules` 上传到云服务上。但我们在发布时只会安装 `dependencies` 依赖。绝大部分情况下包大小不会超过 `50MB`，如果确实是因为 `dependencies` 依赖大小超出，可以配置 [whiteList](./api$config#whiteList) 来将该依赖与服务端 `bundle` 打在一起。若能正常运行，则可以将该依赖移除 `dependencies` 加入 `devDependencies`，在发布时则不会安装该依赖。
 
-这里有非常重要的一点，记住这里除了依赖本身之外还需要包括依赖的依赖。例如 `antd` 自身的 `dependencies` 里依赖了其他模块，这些模块也需要一并配置到白名单当中。这里为了减少工作量，框架本身增加了一层比较简单的依赖自动遍历收集策略，当 `whiteList` 的值不为 `RegExp` 而是 `string` 的时候，框架会将其当成模块名，并且会深度遍历模块自身的依赖以及依赖的依赖。
+- `whiteList` 有 `string[]` 和 `RegExp[]` 两种形式，代表不同的含义。在 `Serverless` 发布场景下一般使用` string[]`, 详细解释请查看[whiteList](./api$config#whiteList)字段
 
 下面附上需要将 `antd` 打包进来的配置作为参考，
 
@@ -434,7 +432,7 @@ const data = usePiniaStore(pinia) // 非 setup 上下文调用时需要手动传
 ```
 ### Vue3 任意文件获取 App 实例
 
-为了方便开发者在任意地方都能够使用 `App` 实例，这里框架提供了 `useApp` api 可以在任意文件调用
+为了方便开发者获取 `App` 实例，这里框架提供了 `useApp` api 可以在任意前端组件作用域范围内文件调用(不包括 fetch.ts 的作用域范围内)
 
 ```js
 import { useApp } from 'ssr-common-utils'
@@ -636,7 +634,7 @@ export { userConfig }
 
 - webpack
 
-`webpack` 场景下支持[按需导入](https://element-plus.gitee.io/zh-CN/guide/quickstart.html#%E6%8C%89%E9%9C%80%E5%AF%BC%E5%85%A5)和[手动导入](https://element-plus.gitee.io/zh-CN/guide/quickstart.html#%E6%89%8B%E5%8A%A8%E5%AF%BC%E5%85%A5)两种方案可直接使用。
+`webpack` 场景下支持[按需导入](https://element-plus.gitee.io/zh-CN/guide/quickstart.html#%E6%8C%89%E9%9C%80%E5%AF%BC%E5%85%A5) `element-plus`，开发者无需手动配置任何插件，也不需要在代码中 `import` 相关代码，可以直接在 `template` 中使用 `el-button` 等组件。
 
 - vite
 
@@ -1338,6 +1336,12 @@ if (__isBrowser__) {
 }
 ```
 
+## 分析构建产物
+
+在 `Webpack` 模式下通过 `ssr build -a` 来分析产物构成。
+
+在 `Vite` 模式下通过查看 `build/generateMap.json` 文件查看每一个源文件将会被构建到哪一个最终的产物 `chunk` 中
+
 ## 高性能产物构建
 
 在 `Vite` 模式下，框架实现了一种高性能的产物构建策略，来保证开发者只会加载到当前页面所必需的文件不会加载多余的文件，同时也不会在不同文件中构建重复的内容来保证 `bundle` 体积最小。
@@ -1345,3 +1349,77 @@ if (__isBrowser__) {
 在 `Webpack` 模式下，框架提供了 `ssr start|build --optimize` 选项来开启这一构建策略。这个过程中会借助 `Vite|Rollup` 的一些模块依赖分析的能力。所以会增加一些构建时间，开发者可只在构建生产环境产物时使用此配置。如果你使用过程中发现了什么问题，请提 [issue](https://github.com/zhangyuang/ssr/issues)。
 
 为了保证构建的性能最高，分析结果最准确。请尽量使用 `ESM Module(import / export)` 语法而不是 `CommonJS(require / module.exports)` 语法来导入导出模块。
+
+## Vite 生产环境构建样式闪烁
+
+尽管我们已经对 `Vite` 在生产环境的构建体验做了非常多的优化，包括实现了理论上的最佳构建策略来保证构建出来的文件体积最小，每个页面只会加载用到的代码不会加载任何额外内容。但目前发现仍有一些极端场景我们无法覆盖。目前我们只发现在以下场景下可能会出现样式闪烁的问题，如果你在其他场景下也出现了问题欢迎提交 `issue`
+
+### 禁止在 style 里面引用公共样式
+
+如果你有公共页面的样式需要加载，我们推荐你放在 `common.less` 中并在 `App.vue` 中加载。
+
+例如像下面的写法将会产生样式闪烁
+
+```js
+// foo.less
+.foo {
+  color: red
+}
+
+// a.vue
+<template>
+  <div class="foo">a</div> 
+</template>
+
+<script>
+
+</script>
+
+<style>
+@import "./foo.less";
+</style>
+
+// b.vue
+<template>
+  <div class="foo">b</div> 
+</template>
+
+<script>
+
+</script>
+
+<style>
+@import "./foo.less";
+</style>
+
+```
+
+上面的代码中，框架在构建时没有足够多的信息去判断出 `a`, `b` 两个组件引用了同一份样式文件，所以尽量不要用这种写法来实现功能。
+
+- 修改方法1：将公共样式放在 `common.less` 中
+
+- 修改方法2: 使用下面的代码写法, 在 `script` 中引入文件，此时框架可以正确的解析出引用关系。
+
+```js
+// foo.less
+.foo {
+  color: red
+}
+
+// a.vue
+<template>
+  <div class="foo">a</div> 
+</template>
+<script>
+import './foo.less';
+</script>
+
+// b.vue
+<template>
+  <div class="foo">b</div> 
+</template>
+
+<script>
+import './foo.less';
+</script>
+```

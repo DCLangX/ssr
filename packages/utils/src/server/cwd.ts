@@ -208,11 +208,27 @@ const isFaaS = async (fun?: boolean) => {
   return result
 }
 
+export const checkRoute = ({
+  routeItem,
+  path
+}: {
+  routeItem?: any
+  path: string
+}) => {
+  if (!routeItem) {
+    throw new Error(`
+      With Path: ${path} search component failed
+      If you create new folder or component file, please restart server by npm start
+      `)
+  }
+}
+
 const judgeFramework = () => {
   const cwd = getCwd()
   const packageJSON = require(resolve(cwd, './package.json'))
   if (packageJSON.dependencies.react || packageJSON.devDependencies.react) {
-    return 'ssr-plugin-react'
+    const version = packageJSON.dependencies.react || packageJSON.devDependencies.react
+    return coerce(version)!.major === 18 ? 'ssr-plugin-react18' : 'ssr-plugin-react'
   } else if (packageJSON.dependencies.vue || packageJSON.devDependencies.vue) {
     const version = packageJSON.dependencies.vue || packageJSON.devDependencies.vue
     return coerce(version)!.major === 3 ? 'ssr-plugin-vue3' : 'ssr-plugin-vue'
@@ -277,7 +293,8 @@ const accessFileSync = (file: string) => {
 }
 
 const copyReactContext = async () => {
-  await promises.copyFile(resolve(getCwd(), './node_modules/ssr-plugin-react/src/entry/create-context.ts'), resolve(getCwd(), './build/create-context.ts'))
+  const f = judgeFramework()
+  await promises.copyFile(resolve(getCwd(), `./node_modules/${f}/src/entry/create-context.ts`), resolve(getCwd(), './build/create-context.ts'))
 }
 
 const execPromisify = promisify(exec)
@@ -289,6 +306,31 @@ const stringifyDefine = (obj: {[key: string]: Json}) => {
       obj[key] = JSON.stringify(val)
     } else if (typeof val === 'object') {
       stringifyDefine(val)
+    }
+  }
+}
+
+export const getViteServerEntry = () => {
+  const cwd = getCwd()
+  const framework = judgeFramework()
+  return resolve(cwd, `./node_modules/${framework}/esm/entry/server-entry.js`)
+}
+
+export const checkTsConfig = async () => {
+  const cwd = getCwd()
+  const { logWarning } = await import('./log')
+  const f = judgeServerFramework()
+  if (f !== 'ssr-plugin-midway') return
+  const tsconfigExist = await accessFile(resolve(cwd, './tsconfig.json'))
+  if (tsconfigExist) {
+    try {
+      const paths = require(resolve(cwd, './tsconfig.json')).compilerOptions.paths
+      if (paths) {
+        logWarning('在 Midway 中不建议使用 tsconfig paths 去引用非类型文件, ref https://midwayjs.org/docs/faq/alias_path')
+      }
+    } catch (error) {
+      // 有可能 json 文件存在注释导致 require 失败，这里 catch 一下
+      console.log('检测到当前目录 tsconfig.json 文件可能存在语法错误，请检查是否存在注释或多余的符号')
     }
   }
 }

@@ -13,8 +13,8 @@ export const getOutputPublicPath = () => {
 }
 
 export const getImageOutputPath = () => {
-  const { publicPath, isDev } = loadConfig()
-  const imagePath = 'static/images'
+  const { publicPath, isDev, assetsDir } = loadConfig()
+  const imagePath = `${assetsDir}/images`
   const normalizePath = normalizeEndPath(publicPath)
   return {
     publicPath: isDev ? `${normalizePath}${imagePath}` : `${normalizePath}client/${imagePath}`,
@@ -139,6 +139,7 @@ const renderRoutes = async (pageDir: string, pathRecord: string[], route: ParseF
         // 单 fetch 文件的情况 所有类型的 render 都对应该 fetch
         route.fetch = `${aliasPath}/fetch.ts`
       }
+      route.name = route.webpackChunkName
       routeArr.push({ ...route })
     }
   }

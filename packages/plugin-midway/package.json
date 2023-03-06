@@ -1,6 +1,6 @@
 {
   "name": "ssr-plugin-midway",
-  "version": "6.2.18",
+  "version": "6.2.20",
   "description": "plugin-midway for ssr",
   "main": "./cjs/index.js",
   "module": "./esm/index.js",
@@ -28,7 +28,7 @@
   },
   "homepage": "https://github.com/zhangyuang/ssr#readme",
   "dependencies": {
-    "@midwayjs/cli": "^1.0.0",
+    "@midwayjs/cli": "^2.0.0",
     "@types/koa": "^2.13.5",
     "ssr-common-utils": "^6.2.10"
   },

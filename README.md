@@ -25,7 +25,7 @@
 
 此框架脱胎于 [egg-react-ssr](https://github.com/zhangyuang/egg-react-ssr) 项目和 `ssr` v4版本`（midway-faas + react ssr）`，在之前的基础上做了诸多演进，通过插件化的代码组织形式，支持任意服务端框架与任意前端框架的组合使用。开发者可以选择通过 `Serverless` 方式部署或是以传统 `Node.js` 的应用形式部署，并且我们专注于提升 `Serverless` 场景下服务端渲染应用的开发体验，打造了一站式的开发，发布应用服务的功能。最大程度提升开发者的开发体验，将应用的开发，部署成本降到最低。
  
-在最新的版本中，同时支持 `React` 和 `Vue2/Vue3` 作为服务端渲染框架且开发工具侧我们同样支持了最流行的 `Vite` 来提升应用的启动速度和 HMR 速度，且提供一键以 `Serverless` 的形式发布上云的功能。我们可以非常有自信说它是地球上最先进的 `ssr` 框架。如果你希望获得开箱即用的体验且能够一键部署上云，请选择 `ssr` 框架。
+在最新的版本中，同时支持 `React17/18` 和 `Vue2/Vue3` 作为服务端渲染框架且开发工具侧我们同样支持了最流行的 `Vite` 来提升应用的启动速度和 HMR 速度，且提供一键以 `Serverless` 的形式发布上云的功能。我们可以非常有自信说它是地球上最先进的 `ssr` 框架。如果你希望获得开箱即用的体验且能够一键部署上云，请选择 `ssr` 框架。
 
 阅读我们的 [官方文档](http://doc.ssr-fc.com/) 获得更加详细的了解。事实上文档本身便是用 `ssr` 框架开发并通过 `Serverless` 部署到阿里云服务
 
@@ -40,7 +40,8 @@
 - 可能会改动技术栈，如从 `Vue2` 升级为 `Vue3`，从 `Vue3` 降级为 `Vue2` 或 `React/Vue` 互相切换
 - 需要在服务端渲染场景下开箱即用使用 `antd` `vant` 等流行 `ui` 库
 - 需要能够同时支持 `Webpack`, `Vite` 两种开发工具，以便同时得到快速的启动速度 `HMR` 速度以及稳定的生产环境代码
-- 需要在 `Vue3` 场景支持 `Script Setup` 以及 [pinia](https://pinia.vuejs.org/) 作为数据管理方案
+- 需要在 `Vue3 SSR` 使用 [pinia](https://pinia.vuejs.org/) 作为数据管理方案
+- 只是单纯的需要一个更快更好用的 `cra` 或 `vue-cli`, `ssr` 框架在纯 `csr` 场景的支持也十分优秀
 
 ## 哪些应用在使用
 
@@ -143,7 +144,7 @@
 
 ## Features
 
-- 🌱　极易定制：前端支持 React/Vue2/Vue3 等现代Web框架；
+- 🌱　极易定制：前端支持 React17/React18/Vue2/Vue3 等现代Web框架；
 - 🚀　开箱即用：内置 10+ 脚手架配套扩展，如 [Pinia](https://pinia.vuejs.org/introduction.html#basic-example)、[antd](https://ant.design/components/overview-cn/)、[vant](https://github.com/youzan/vant)、TypeScript、Hooks等；
 - 🧲　插件驱动：基于插件架构，用户更加专注于业务逻辑；
 - 💯　Serverless优先：一键发布到各种Serverless平台，也支持传统Web Server，比如Egg、Midway、Nest等。
@@ -156,7 +157,7 @@
 
 | 里程碑                                                                                                                                                                                                                                          | 状态 |
 | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---- |
-| 支持任意服务端框架与任意前端框架的组合使用。(Serverless/Midway/NestJS) + (React/Vue2/Vue3)                                                                                                                                                      | 🚀    |
+| 支持任意服务端框架与任意前端框架的组合使用。(Serverless/Midway/NestJS) + (React17/React18/Vue2/Vue3)                                                                                                                                                      | 🚀    |
 | 最丝滑的 [vite](https://vite-design.surge.sh/) [支持](http://doc.ssr-fc.com/docs/features$vite)                                                                                                                                                 | 🚀    |
 | 最小而美的实现服务端渲染功能                                                                                                                                                                                                                    | 🚀    |
 | 支持[预渲染](http://doc.ssr-fc.com/docs/features$ssg)能力                                                                                                                                                                                                                   | 🚀    |
@@ -190,10 +191,12 @@
 注意: 在 `Midway.js` `Nest.js` 场景下我们都已实现了一键部署到 `Serverless` 平台的能力。但底层实现略有差异。更加详细的介绍可以阅读 [Serverless](http://doc.ssr-fc.com/docs/features$serverless) 章节。如需要大量使用 `Serverless` 平台提供的能力，我们建议创建 `Midway.js` 类型的应用。强烈建议阅读我们的 [官方文档](http://doc.ssr-fc.com/) 来获得更加详细的了解
 
 - [nestjs-react-ssr](https://github.com/zhangyuang/ssr/tree/dev/example/nestjs-react-ssr)
+- [nestjs-react18-ssr](https://github.com/zhangyuang/ssr/tree/dev/example/nestjs-react18-ssr)
 - [nestjs-vue-ssr](https://github.com/zhangyuang/ssr/tree/dev/example/nestjs-vue-ssr)
 - [nestjs-vue3-ssr](https://github.com/zhangyuang/ssr/tree/dev/example/nestjs-vue3-ssr)
 - [nestjs-vue3-ssr-pinia](https://github.com/zhangyuang/nestjs-vue3-ssr-pinia)
 - [midway-react-ssr](https://github.com/zhangyuang/ssr/tree/dev/example/midway-react-ssr)
+- [midway-react18-ssr](https://github.com/zhangyuang/ssr/tree/dev/example/midway-react18-ssr)
 - [midway-vue-ssr](https://github.com/zhangyuang/ssr/tree/dev/example/midway-vue-ssr)
 - [midway-vue3-ssr](https://github.com/zhangyuang/ssr/tree/dev/example/midway-vue3-ssr)
 
@@ -235,8 +238,7 @@ $ yarn start:vite # 以 vite 模式启动，等价于 npx ssr start --vite
 | Project             | Status                                           | Description                                                             |
 | ------------------- | ------------------------------------------------ | ----------------------------------------------------------------------- |
 | [ssr]               | [![ssr-status]][ssr]                             | cli for ssr framework                                                   |
-| [ssr-core-vue]      | [![ssr-core-vue-status]][ssr-core-vue]           | core render for vue                                                     |
-| [ssr-core-react]    | [![ssr-core-react-status]][ssr-core-react]       | core render for react                                                   |
+| [ssr-core]      | [![ssr-core-status]][ssr-core]           | core render for all framwork                                                     |
 | [ssr-plugin-midway] | [![ssr-plugin-midway-status]][ssr-plugin-midway] | provide start and build fetature by [midway@2.0](https://midwayjs.org/) |
 | [ssr-plugin-nestjs] | [![ssr-plugin-nestjs-status]][ssr-plugin-nestjs] | provide start and build feature by [NestJS](https://docs.nestjs.com/)   |
 | [ssr-plugin-react]  | [![ssr-plugin-react-status]][ssr-plugin-react]   | develop react application only be used in development                   |
@@ -250,8 +252,7 @@ $ yarn start:vite # 以 vite 模式启动，等价于 npx ssr start --vite
 
 
 [ssr-status]: https://img.shields.io/npm/v/ssr.svg
-[ssr-core-react-status]: https://img.shields.io/npm/v/ssr-core-react.svg
-[ssr-core-vue-status]: https://img.shields.io/npm/v/ssr-core-vue.svg
+[ssr-core-status]: https://img.shields.io/npm/v/ssr-core.svg
 [ssr-hoc-react-status]: https://img.shields.io/npm/v/ssr-hoc-react.svg
 [ssr-hoc-vue3-status]: https://img.shields.io/npm/v/ssr-hoc-vue3.svg
 [ssr-common-utils-status]: https://img.shields.io/npm/v/ssr-common-utils.svg
@@ -265,8 +266,7 @@ $ yarn start:vite # 以 vite 模式启动，等价于 npx ssr start --vite
 
 
 [ssr]: https://github.com/zhangyuang/ssr/tree/dev/packages/cli
-[ssr-core-react]: https://github.com/zhangyuang/ssr/tree/dev/packages/core-react
-[ssr-core-vue]: https://github.com/zhangyuang/ssr/tree/dev/packages/core-vue
+[ssr-core]: https://github.com/zhangyuang/ssr/tree/dev/packages/core
 [ssr-hoc-react]: https://github.com/zhangyuang/ssr/tree/dev/packages/hoc-react
 [ssr-hoc-vue3]: https://github.com/zhangyuang/ssr/tree/dev/packages/hoc-vue3
 [ssr-plugin-midway]: https://github.com/zhangyuang/ssr/tree/dev/packages/plugin-midway

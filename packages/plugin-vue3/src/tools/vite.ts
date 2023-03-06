@@ -1,14 +1,15 @@
 import { build, UserConfig } from 'vite'
 import {
   loadConfig, chunkNamePlugin, rollupOutputOptions, manifestPlugin,
-  commonConfig, asyncOptimizeChunkPlugin, getOutputPublicPath
+  commonConfig, asyncOptimizeChunkPlugin, getOutputPublicPath, getBabelOptions
 } from 'ssr-common-utils'
 import vuePlugin from '@vitejs/plugin-vue'
 import vueJSXPlugin from '@vitejs/plugin-vue-jsx'
 import babel from '@rollup/plugin-babel'
+
 import { createStyleImportPlugin, AndDesignVueResolve, VantResolve, ElementPlusResolve, NutuiResolve, AntdResolve } from 'ssr-vite-plugin-style-import'
 
-const { getOutput, vue3ServerEntry, vue3ClientEntry, viteConfig, supportOptinalChaining, isDev, define, babelOptions, optimize } = loadConfig()
+const { getOutput, vue3ServerEntry, vue3ClientEntry, viteConfig, supportOptinalChaining, isDev, define, optimize } = loadConfig()
 const { clientOutPut, serverOutPut } = getOutput()
 
 const styleImportConfig = {
@@ -39,9 +40,6 @@ const serverConfig: UserConfig = {
       ],
       exclude: /node_modules|\.(css|less|sass)/,
       extensions: ['.vue', '.ts', '.tsx', '.js']
-    }),
-    babelOptions && babel({
-      ...babelOptions
     })
   ],
   optimizeDeps: {
@@ -58,7 +56,8 @@ const serverConfig: UserConfig = {
       ...viteConfig?.().server?.otherConfig?.build?.rollupOptions,
       input: isDev ? vue3ClientEntry : vue3ServerEntry, // setting prebundle list by client-entry in dev
       output: {
-        entryFileNames: 'Page.server.js'
+        entryFileNames: 'Page.server.js',
+        assetFileNames: rollupOutputOptions().assetFileNames
       }
     }
   },
@@ -79,10 +78,7 @@ const clientConfig: UserConfig = {
     vueJSXPlugin(),
     viteConfig?.()?.common?.extraPlugin,
     viteConfig?.()?.client?.extraPlugin,
-    createStyleImportPlugin(styleImportConfig),
-    babelOptions && babel({
-      ...babelOptions
-    })
+    createStyleImportPlugin(styleImportConfig)
   ],
   build: {
     ...viteConfig?.().client?.otherConfig?.build,
@@ -92,8 +88,11 @@ const clientConfig: UserConfig = {
     rollupOptions: {
       ...viteConfig?.().client?.otherConfig?.build?.rollupOptions,
       input: vue3ClientEntry,
-      output: rollupOutputOptions,
-      plugins: [chunkNamePlugin(), asyncOptimizeChunkPlugin(), manifestPlugin()]
+      output: rollupOutputOptions(),
+      plugins: [chunkNamePlugin(), asyncOptimizeChunkPlugin(), manifestPlugin(),
+        ...getBabelOptions({
+          babel
+        })]
     }
   },
   define: {

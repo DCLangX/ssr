@@ -4,13 +4,14 @@ import { resolve, isAbsolute } from 'path'
 import type { UserConfig, Plugin } from 'vite'
 import { parse as parseImports } from 'es-module-lexer'
 import MagicString from 'magic-string'
-import type { OutputOptions, PreRenderedChunk } from 'rollup'
+import type { OutputOptions, PreRenderedChunk, PluginContext } from 'rollup'
 import { mkdir } from 'shelljs'
 import { loadConfig } from '../loadConfig'
 import { getOutputPublicPath } from '../parse'
 import { getCwd, cryptoAsyncChunkName, accessFile, debounce } from '../cwd'
 import { logErr } from '../log'
 import { getDependencies, getPkgName } from '../build-utils'
+import { getBuildConfig } from '../build-config'
 import { defaultExternal } from '../static'
 
 const webpackCommentRegExp = /webpackChunkName:\s?"(.*)?"\s?\*/
@@ -22,7 +23,7 @@ const dependenciesMap: Record<string, string[]> = {}
 const asyncChunkMapJSON: Record<string, string[]> = {}
 const generateMap: Record<string, string> = {}
 const vendorList = ['vue', 'vuex', 'vue-router', 'react', 'react-router',
-  'react-router-dom', 'react-dom', '@vue', 'ssr-hoc-react',
+  'react-router-dom', 'react-dom', '@vue', 'ssr-hoc-react', 'ssr-hoc-react18',
   'ssr-client-utils', 'ssr-common-utils', 'pinia', '@babel/runtime',
   'ssr-plugin-vue3', 'ssr-plugin-vue', 'ssr-plugin-react', 'react/jsx-runtime',
   'path-to-regexp'
@@ -61,7 +62,7 @@ const chunkNamePlugin = function (): Plugin {
 
 const filePathMap: Record<string, string> = {}
 
-const recordInfo = (id: string, chunkName: string|null, defaultChunkName: string|null, parentId: string) => {
+const recordInfo = (id: string, chunkName: string | null, defaultChunkName: string | null, parentId: string) => {
   const sign = id.includes('node_modules') ? getPkgName(id) : id
   if (id.includes('node_modules')) {
     filePathMap[sign] = parentId
@@ -85,7 +86,7 @@ const fn = () => {
   const { writeDebounceTime } = loadConfig()
   return debounce(() => {
     if (hasWritten) {
-      throw new Error('generateMap has been written over twice, please check your machine performance, or add config.writeDebounceTime that default is 1000ms')
+      throw new Error(`generateMap has been written over twice, please check your machine performance, or add config.writeDebounceTime that default is ${writeDebounceTime}ms`)
     }
     hasWritten = true
     writeEmitter.emit('buildEnd')
@@ -94,6 +95,26 @@ const fn = () => {
 
 let checkBuildEnd: () => void
 const moduleIds: string[] = []
+
+const findChildren = (id: string, getModuleInfo: PluginContext['getModuleInfo']) => {
+  const queue = [id]
+  while (queue.length > 0) {
+    const id = queue.shift()
+    if (id?.includes('node_modules')) {
+      continue
+    }
+    const { importedIds = [], dynamicallyImportedIds = [] } = getModuleInfo(id!) ?? {}
+    for (const importerId of importedIds) {
+      recordInfo(importerId, null, null, id!)
+      queue.push(importerId)
+    }
+    for (const dyImporterId of dynamicallyImportedIds) {
+      recordInfo(dyImporterId, null, 'dynamic', id!)
+      queue.push(dyImporterId)
+    }
+  }
+}
+
 const asyncOptimizeChunkPlugin = (): Plugin => {
   return {
     name: 'asyncOptimizeChunkPlugin',
@@ -108,14 +129,6 @@ const asyncOptimizeChunkPlugin = (): Plugin => {
         for (const dyImporterId of dynamicallyImportedIds) {
           recordInfo(dyImporterId, chunkName, 'dynamic', id)
         }
-      } else if (dependenciesMap[id]) {
-        const { importedIds, dynamicallyImportedIds } = this.getModuleInfo(id)!
-        for (const importerId of importedIds) {
-          recordInfo(importerId, null, null, id)
-        }
-        for (const dyImporterId of dynamicallyImportedIds) {
-          recordInfo(dyImporterId, null, 'dynamic', id)
-        }
       }
     },
     buildStart () {
@@ -125,7 +138,13 @@ const asyncOptimizeChunkPlugin = (): Plugin => {
       moduleIds.push(id)
       checkBuildEnd()
     },
-    async buildEnd (err) {
+    async buildEnd (this, err) {
+      // after the first layer file can be located in which chunkName
+      // confirm all children dependence belong to which chunkName
+      Object.keys(dependenciesMap).forEach(item => {
+        const id = !isAbsolute(item) ? filePathMap[item] : item
+        findChildren(id, this.getModuleInfo)
+      })
       Object.keys(dependenciesMap).forEach(item => {
         if (!isAbsolute(item)) {
           const abPath = filePathMap[item]
@@ -178,12 +197,12 @@ const manifestPlugin = (): Plugin => {
       const manifest: Record<string, string> = {}
       for (const bundle in bundles) {
         const val = bundle
-        const arr = bundle.split('.')
+        const arr = bundle.split('/')[1].split('.')
         arr.splice(1, 2)
         manifest[arr.join('.')] = `${getOutputPublicPath()}${val}`
       }
       if (!await accessFile(resolve(clientOutPut))) {
-        mkdir(resolve(clientOutPut))
+        mkdir('-p', resolve(clientOutPut))
       }
       manifest['vite'] = '1'
       await promises.writeFile(resolve(clientOutPut, './asset-manifest.json'), JSON.stringify(manifest, null, 2))
@@ -202,22 +221,25 @@ const setGenerateMap = (id: string) => {
   generateMap[id] = res ?? 'void'
 }
 
-const rollupOutputOptions: OutputOptions = {
-  entryFileNames: (chunkInfo: PreRenderedChunk) => {
-    return 'Page.[hash].chunk.js'
-  },
-  chunkFileNames: '[name].[hash].chunk.js',
-  assetFileNames: (assetInfo) => {
-    if (assetInfo.name?.includes('client-entry')) {
-      return 'Page.[hash].chunk.[ext]'
+const rollupOutputOptions: () => OutputOptions = () => {
+  const buildConfig = getBuildConfig()
+  return {
+    entryFileNames: (chunkInfo: PreRenderedChunk) => {
+      return buildConfig.entryChunk
+    },
+    chunkFileNames: buildConfig.jsBuldConfig.chunkFileName,
+    assetFileNames: (assetInfo) => {
+      if (assetInfo.name?.includes('client-entry')) {
+        return buildConfig.clientEntryChunk
+      }
+      if (assetInfo.name && (imageRegExp.test(assetInfo.name) || fontRegExp.test(assetInfo.name))) {
+        return buildConfig.imagePathForVite
+      }
+      return buildConfig.viteAssetChunk
+    },
+    manualChunks: (id: string) => {
+      return generateMap[id] === 'void' ? undefined : generateMap[id]
     }
-    if (assetInfo.name && (imageRegExp.test(assetInfo.name) || fontRegExp.test(assetInfo.name))) {
-      return 'assets/[name].[hash].[ext]'
-    }
-    return '[name].[hash].chunk.[ext]'
-  },
-  manualChunks: (id: string) => {
-    return generateMap[id] === 'void' ? undefined : generateMap[id]
   }
 }
 

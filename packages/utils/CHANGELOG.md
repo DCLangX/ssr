@@ -1,3 +1,130 @@
+## [6.2.73](https://github.com/zhangyuang/ssr/compare/utils@6.2.72...utils@6.2.73) (2023-03-02)
+
+
+### Bug Fixes
+
+* react18 default exclude ([1747419](https://github.com/zhangyuang/ssr/commit/1747419b978d81e7abe5c6975884ca8a87c749de))
+
+
+### Features
+
+* support configuration config.assetDir ([#270](https://github.com/zhangyuang/ssr/issues/270)) ([885716c](https://github.com/zhangyuang/ssr/commit/885716cefa254dc812a5cae36627103fab3c449d))
+
+
+
+## [6.2.72](https://github.com/zhangyuang/ssr/compare/utils@6.2.71...utils@6.2.72) (2023-02-27)
+
+
+### Features
+
+* remove unplugin-element-plus ([25231dc](https://github.com/zhangyuang/ssr/commit/25231dc2cab3455bb00de61df8306ddab1ac4c6a))
+* upgrade midway-cli to v2 support deploy concurrency ([13a07f6](https://github.com/zhangyuang/ssr/commit/13a07f696629ebd3fadd366844f888ceaa66247c))
+
+
+
+## [6.2.71](https://github.com/zhangyuang/ssr/compare/utils@6.2.70...utils@6.2.71) (2023-02-25)
+
+
+### Bug Fixes
+
+* vite build with babel ([b924353](https://github.com/zhangyuang/ssr/commit/b9243532cebbbf91fc61cd711f23ced0ef0c82ce))
+
+
+
+## [6.2.70](https://github.com/zhangyuang/ssr/compare/utils@6.2.69...utils@6.2.70) (2023-02-24)
+
+
+### Bug Fixes
+
+* vite build ([6ad5079](https://github.com/zhangyuang/ssr/commit/6ad507976f38c5972e9785a0e528314c46a04431))
+
+
+
+## [6.2.69](https://github.com/zhangyuang/ssr/compare/utils@6.2.68...utils@6.2.69) (2023-02-24)
+
+
+### Features
+
+* improve babel options experience in vue3 vite build ([7f4d34b](https://github.com/zhangyuang/ssr/commit/7f4d34b23c81fbcb665c2f819000468910eb1944))
+
+
+
+## [6.2.68](https://github.com/zhangyuang/ssr/compare/utils@6.2.67...utils@6.2.68) (2023-02-21)
+
+
+### Features
+
+* support route.name close [#266](https://github.com/zhangyuang/ssr/issues/266) ([4a4d27c](https://github.com/zhangyuang/ssr/commit/4a4d27ca46856d0a0349d1de599dc10b5ddb6434))
+
+
+
+## [6.2.67](https://github.com/zhangyuang/ssr/compare/utils@6.2.66...utils@6.2.67) (2023-02-20)
+
+
+### Features
+
+* move core-react core-vue2/3 to core ([54915f7](https://github.com/zhangyuang/ssr/commit/54915f76524997af61213bf3e95a19858746c776))
+
+
+
+## [6.2.66](https://github.com/zhangyuang/ssr/compare/utils@6.2.65...utils@6.2.66) (2023-02-19)
+
+
+### Bug Fixes
+
+* use unshift replace pop in queue ([25e9513](https://github.com/zhangyuang/ssr/commit/25e9513ebc744c70e3d3061a6ef92f66436a116a))
+
+
+### Features
+
+* for ctx.body will loose asynclocalstorage context, consume stream in advance like vue2/3 ([1f0c2ba](https://github.com/zhangyuang/ssr/commit/1f0c2bacd28a7a35af686c98f691a4a0c1ca9693))
+* support react18 ([#264](https://github.com/zhangyuang/ssr/issues/264)) ([c992161](https://github.com/zhangyuang/ssr/commit/c992161c8ea0d2f1a9814dd4b30ffa82b1bbbe84))
+
+
+
+## [6.2.65](https://github.com/zhangyuang/ssr/compare/utils@6.2.64...utils@6.2.65) (2023-02-17)
+
+
+### Features
+
+* ignore node_modules dependencies in vite build ([72a7062](https://github.com/zhangyuang/ssr/commit/72a706283807609576e2de22fb4dcdaa9cc89e54))
+
+
+
+## [6.2.64](https://github.com/zhangyuang/ssr/compare/utils@6.2.63...utils@6.2.64) (2023-02-17)
+
+
+### Bug Fixes
+
+* confirm all children dependence belong to which chunkName in vite ([1ac15e4](https://github.com/zhangyuang/ssr/commit/1ac15e4f2a664426cc8e4c6ff9afa3620e1411ca))
+
+
+
+## [6.2.63](https://github.com/zhangyuang/ssr/compare/utils@6.2.62...utils@6.2.63) (2023-02-16)
+
+
+### Bug Fixes
+
+* vite build dependenciesMap logic ([28bee51](https://github.com/zhangyuang/ssr/commit/28bee5102f0f44e0ab1a7d9e16272c27c1fbbe08))
+
+
+
+## [6.2.62](https://github.com/zhangyuang/ssr/compare/utils@6.2.61...utils@6.2.62) (2023-02-16)
+
+
+### Bug Fixes
+
+* add NODE_OPTIONS tips when nodejs version > 16 ([3492698](https://github.com/zhangyuang/ssr/commit/34926987bb3f6f7562b87b14289f509cecf2a6fa))
+* update vite-vue plugin version ([#261](https://github.com/zhangyuang/ssr/issues/261)) ([31d3844](https://github.com/zhangyuang/ssr/commit/31d38447e49bc8055d59e4452d02fc9825afab64))
+
+
+### Features
+
+* add ssr start --help tips in midway ([f76f0a1](https://github.com/zhangyuang/ssr/commit/f76f0a1a9dc49cb175a800655699a10065571ae2))
+* use asynclocalstorage for get correct pinia store app context instance ([a38d3e9](https://github.com/zhangyuang/ssr/commit/a38d3e99c2a6aa6a64a20099a59fb06edba1b5ea))
+
+
+
 ## [6.2.61](https://github.com/zhangyuang/ssr/compare/utils@6.2.60...utils@6.2.61) (2023-01-24)
 
 
