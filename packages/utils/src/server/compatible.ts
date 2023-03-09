@@ -3,7 +3,7 @@ import { coerce } from 'semver'
 import { accessFileSync, judgeServerFramework, getCwd } from './cwd'
 import { mv } from 'shelljs'
 
-export function checkForkTs () {
+export function checkForkTs() {
   try {
     const framework = judgeServerFramework()
     if (framework === 'ssr-plugin-midway') return
@@ -15,12 +15,11 @@ export function checkForkTs () {
     const forkVersion = require(forkPackage).version
     if (
       coerce(forkVersion)!.major >= 7 &&
-      !accessFileSync(resolve(nestCli, './fork-ts-checker-webpack-plugin'))) {
+      !accessFileSync(resolve(nestCli, './fork-ts-checker-webpack-plugin'))
+    ) {
       mv(fork, nestCli)
     }
-  } catch (error) {
-
-  }
+  } catch (error) {}
 }
 
 checkForkTs()

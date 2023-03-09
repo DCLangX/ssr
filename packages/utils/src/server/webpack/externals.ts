@@ -4,7 +4,10 @@ import { getDependencies } from '../build-utils'
 import { logErr } from '../log'
 import { defaultExternal } from '../static'
 
-const scopedModuleRegex = new RegExp('@[a-zA-Z0-9][\\w-.]+\/[a-zA-Z0-9][\\w-.]+([a-zA-Z0-9.\/]+)?', 'g')
+const scopedModuleRegex = new RegExp(
+  '@[a-zA-Z0-9][\\w-.]+/[a-zA-Z0-9][\\w-.]+([a-zA-Z0-9./]+)?',
+  'g'
+)
 
 function getModuleName(request: string, includeAbsolutePaths: boolean) {
   let req = request
@@ -24,20 +27,25 @@ function getModuleName(request: string, includeAbsolutePaths: boolean) {
 
 function wrap(whitelist: Array<string | RegExp>) {
   const allDependencies: Record<string, string> = {}
-  whitelist.forEach(item => {
+  whitelist.forEach((item) => {
     if (typeof item === 'string') {
       try {
         allDependencies[item] = '1'
-        const { stdout } = sync('node', ['-e', `console.log(require.resolve('${item}'))`, '--preserve-symlinks=1'])
+        const { stdout } = sync('node', [
+          '-e',
+          `console.log(require.resolve('${item}'))`,
+          '--preserve-symlinks=1',
+        ])
         getDependencies(stdout, allDependencies)
       } catch (error) {
-        logErr(`Please check package.json, current program use ${item} but don't specify it in dependencies or ${item} has incorrect package.json main fields `)
+        logErr(
+          `Please check package.json, current program use ${item} but don't specify it in dependencies or ${item} has incorrect package.json main fields `
+        )
       }
     }
   })
-  return whitelist.concat(Object.keys(allDependencies).map(item => new RegExp(item)))
+  return whitelist.concat(Object.keys(allDependencies).map((item) => new RegExp(item)))
 }
-
 
 function nodeExternals(options: any) {
   options = options || {}
@@ -57,7 +65,7 @@ function nodeExternals(options: any) {
     nodeModules = readFromPackageJson(options.modulesFromFile)
   } else {
     if (Array.isArray(modulesDir)) {
-      modulesDir.map(str => {
+      modulesDir.map((str) => {
         nodeModules = nodeModules.concat(readDir(str).filter(isNotBinary))
       })
     } else {
@@ -81,6 +89,4 @@ function nodeExternals(options: any) {
   }
 }
 
-export {
-  nodeExternals
-}
+export { nodeExternals }

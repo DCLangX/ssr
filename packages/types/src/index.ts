@@ -3,9 +3,9 @@ export * from './config'
 export * from './yargs'
 export * from './react'
 
-export type Mode = 'development' |'production'
+export type Mode = 'development' | 'production'
 
-export type ESMFeRouteItem<T={}> = {
+export type ESMFeRouteItem<T = {}> = {
   path: string
   webpackChunkName: string
   name: string

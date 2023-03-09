@@ -33,26 +33,31 @@ const writeRoutes = async (routes: string, name?: string) => {
 const getWebpackSplitCache = () => {
   const { optimize } = loadConfig()
   if (optimize) {
-    const generateMap: Record<string, string> = require(resolve(getCwd(), './build/generateMap.json'))
+    const generateMap: Record<string, string> = require(resolve(
+      getCwd(),
+      './build/generateMap.json'
+    ))
     const asyncChunkMap = require(resolve(getCwd(), './build/asyncChunkMap.json'))
     let maxPriority = Object.keys(asyncChunkMap).length + 1
-    const splitPriorityMap: Record<string, number|undefined> = {
+    const splitPriorityMap: Record<string, number | undefined> = {
       'common-vendor': maxPriority + 1,
-      'layout-app': maxPriority
+      'layout-app': maxPriority,
     }
     // make priority consistent
-    Object.keys(asyncChunkMap).sort((a, b) => {
-      const lenA = asyncChunkMap[a]
-      const lenB = asyncChunkMap[b]
-      if (lenA !== lenB) {
-        return asyncChunkMap[b].length - asyncChunkMap[a].length
-      } else {
-        return a > b ? 1 : -1
-      }
-    }).forEach(chunkName => {
-      splitPriorityMap[chunkName] = maxPriority - 1
-      maxPriority--
-    })
+    Object.keys(asyncChunkMap)
+      .sort((a, b) => {
+        const lenA = asyncChunkMap[a]
+        const lenB = asyncChunkMap[b]
+        if (lenA !== lenB) {
+          return asyncChunkMap[b].length - asyncChunkMap[a].length
+        } else {
+          return a > b ? 1 : -1
+        }
+      })
+      .forEach((chunkName) => {
+        splitPriorityMap[chunkName] = maxPriority - 1
+        maxPriority--
+      })
     const webpackMap: Record<string, string[]> = {}
     for (const fileName in generateMap) {
       const chunkName = generateMap[fileName]
@@ -61,11 +66,14 @@ const getWebpackSplitCache = () => {
       }
       webpackMap[chunkName].push(fileName)
     }
-    const cacheGroups: Record<string, {
-      name: string
-      test: (module: SSRModule) => boolean | undefined
-      priority: number
-    }> = {}
+    const cacheGroups: Record<
+      string,
+      {
+        name: string
+        test: (module: SSRModule) => boolean | undefined
+        priority: number
+      }
+    > = {}
     for (const chunkName in webpackMap) {
       const arr = webpackMap[chunkName]
       if (!cacheGroups[chunkName]) {
@@ -76,7 +84,7 @@ const getWebpackSplitCache = () => {
             const nameForCondition = module.nameForCondition()
             return checkContains(arr, nameForCondition)
           },
-          priority: splitPriorityMap[chunkName] ?? 0
+          priority: splitPriorityMap[chunkName] ?? 0,
         }
       }
     }
@@ -85,12 +93,14 @@ const getWebpackSplitCache = () => {
     return {
       vendors: {
         test: (module: SSRModule) => {
-          return module.resource &&
+          return (
+            module.resource &&
             /\.js$/.test(module.resource) &&
             module.resource.match('node_modules')
+          )
         },
-        name: 'vendor'
-      }
+        name: 'vendor',
+      },
     }
   }
 }
@@ -113,19 +123,17 @@ const checkContainsRev = (arr: string[], name: string) => {
   return false
 }
 
-const getSplitChunksOptions = (asyncChunkMap: {
-  val: Record<string, string[]>
-}) => {
+const getSplitChunksOptions = (asyncChunkMap: { val: Record<string, string[]> }) => {
   const { optimize } = loadConfig()
   return {
     minSize: optimize ? 0 : 2000,
     maxAsyncRequests: 5,
     maxInitialRequests: 3,
     chunks: 'all',
-    name (module: SSRModule, chunks: any, cacheGroupKey: string) {
+    name(module: SSRModule, chunks: any, cacheGroupKey: string) {
       return cryptoAsyncChunkName(chunks, asyncChunkMap.val)
     },
-    cacheGroups: getWebpackSplitCache()
+    cacheGroups: getWebpackSplitCache(),
   }
 }
 
@@ -134,7 +142,7 @@ const transformConfig = async () => {
   const { cp, mkdir } = await import('shelljs')
   const { transform } = await import('esbuild')
   const cwd = getCwd()
-  if (!await accessFile(resolve(cwd, './build'))) {
+  if (!(await accessFile(resolve(cwd, './build')))) {
     mkdir(resolve(cwd, './build'))
   }
   if (await accessFile(resolve(cwd, './config.js'))) {
@@ -146,7 +154,7 @@ const transformConfig = async () => {
     const { code } = await transform(fileContent, {
       loader: 'ts',
       format: 'cjs',
-      keepNames: true
+      keepNames: true,
     })
     await promises.writeFile(resolve(cwd, './build/config.js'), code)
   }
@@ -164,7 +172,7 @@ const transformManualRoutes = async () => {
   const { code } = await transform(fileContent, {
     loader: 'ts',
     format: 'esm',
-    keepNames: true
+    keepNames: true,
   })
   const serializeCode = code.replace(/(import\([\s\S]*?\))/g, (match) => {
     return match.replace(/\s/g, '')
@@ -174,11 +182,14 @@ const transformManualRoutes = async () => {
 
 const getUserConfig = (): UserConfig => {
   const defaultConfig = resolve(getCwd(), './build/config.js')
-  return accessFileSync(defaultConfig) ? (require(defaultConfig).userConfig ?? require(defaultConfig)) : {} // for dynamic file
+  return accessFileSync(defaultConfig)
+    ? require(defaultConfig).userConfig ?? require(defaultConfig)
+    : {} // for dynamic file
 }
 
 const cyrb53 = function (str: string, seed = 0) {
-  let h1 = 0xdeadbeef ^ seed; let h2 = 0x41c6ce57 ^ seed
+  let h1 = 0xdeadbeef ^ seed
+  let h2 = 0x41c6ce57 ^ seed
   for (let i = 0, ch; i < str.length; i++) {
     ch = str.charCodeAt(i)
     h1 = Math.imul(h1 ^ ch, 2654435761)
@@ -189,10 +200,13 @@ const cyrb53 = function (str: string, seed = 0) {
   return 4294967296 * (2097151 & h2) + (h1 >>> 0)
 }
 
-const cryptoAsyncChunkName = (chunks: Array<{name: string}>, asyncChunkMap: Record<string, string[]>) => {
+const cryptoAsyncChunkName = (
+  chunks: Array<{ name: string }>,
+  asyncChunkMap: Record<string, string[]>
+) => {
   // 加密异步模块 name，防止名称过长
-  chunks.sort((a, b) => a.name > b.name ? -1 : 1) // 保证相同值不同顺序的数组最终的加密结果一致
-  const allChunksNames = chunks.map(item => item.name).join('~')
+  chunks.sort((a, b) => (a.name > b.name ? -1 : 1)) // 保证相同值不同顺序的数组最终的加密结果一致
+  const allChunksNames = chunks.map((item) => item.name).join('~')
   const allChunksNamesArr = allChunksNames.split('~')
   const cryptoAllChunksNames = String(chunks.length > 3 ? cyrb53(allChunksNames) : allChunksNames)
   if (allChunksNamesArr.length >= 2 && !asyncChunkMap?.[cryptoAllChunksNames]) {
@@ -202,19 +216,14 @@ const cryptoAsyncChunkName = (chunks: Array<{name: string}>, asyncChunkMap: Reco
 }
 
 const isFaaS = async (fun?: boolean) => {
-  const result = await promises.access(resolve(getCwd(), fun ? 'template.yml' : 'f.yml'))
+  const result = await promises
+    .access(resolve(getCwd(), fun ? 'template.yml' : 'f.yml'))
     .then(() => true)
     .catch(() => false)
   return result
 }
 
-export const checkRoute = ({
-  routeItem,
-  path
-}: {
-  routeItem?: any
-  path: string
-}) => {
+export const checkRoute = ({ routeItem, path }: { routeItem?: any; path: string }) => {
   if (!routeItem) {
     throw new Error(`
       With Path: ${path} search component failed
@@ -262,7 +271,7 @@ const loadModuleFromFramework = (path: string) => {
   const paths = resolve(getCwd(), `./node_modules/${framework}`)
   try {
     return require.resolve(path, {
-      paths: [accessFileSync(paths) ? realpathSync(paths) : paths]
+      paths: [accessFileSync(paths) ? realpathSync(paths) : paths],
     })
   } catch (error) {
     return ''
@@ -276,7 +285,8 @@ const processError = (err: any) => {
   }
 }
 const accessFile = async (file: string) => {
-  const result = await promises.access(file)
+  const result = await promises
+    .access(file)
     .then(() => true)
     .catch(() => false)
   return result
@@ -294,12 +304,15 @@ const accessFileSync = (file: string) => {
 
 const copyReactContext = async () => {
   const f = judgeFramework()
-  await promises.copyFile(resolve(getCwd(), `./node_modules/${f}/src/entry/create-context.ts`), resolve(getCwd(), './build/create-context.ts'))
+  await promises.copyFile(
+    resolve(getCwd(), `./node_modules/${f}/src/entry/create-context.ts`),
+    resolve(getCwd(), './build/create-context.ts')
+  )
 }
 
 const execPromisify = promisify(exec)
 
-const stringifyDefine = (obj: {[key: string]: Json}) => {
+const stringifyDefine = (obj: Record<string, Json>) => {
   for (const key in obj) {
     const val = obj[key]
     if (typeof val === 'string' && val.slice(0, 1) !== '"') {
@@ -326,11 +339,15 @@ export const checkTsConfig = async () => {
     try {
       const paths = require(resolve(cwd, './tsconfig.json')).compilerOptions.paths
       if (paths) {
-        logWarning('在 Midway 中不建议使用 tsconfig paths 去引用非类型文件, ref https://midwayjs.org/docs/faq/alias_path')
+        logWarning(
+          '在 Midway 中不建议使用 tsconfig paths 去引用非类型文件, ref https://midwayjs.org/docs/faq/alias_path'
+        )
       }
     } catch (error) {
       // 有可能 json 文件存在注释导致 require 失败，这里 catch 一下
-      console.log('检测到当前目录 tsconfig.json 文件可能存在语法错误，请检查是否存在注释或多余的符号')
+      console.log(
+        '检测到当前目录 tsconfig.json 文件可能存在语法错误，请检查是否存在注释或多余的符号'
+      )
     }
   }
 }
@@ -359,5 +376,5 @@ export {
   getSplitChunksOptions,
   cleanOutClientDir,
   checkContainsRev,
-  getPkgJson
+  getPkgJson,
 }

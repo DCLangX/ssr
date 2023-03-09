@@ -8,7 +8,10 @@ export const webpackStart = async () => {
   const { startClientServer } = await import('ssr-webpack')
   const { getClientWebpack } = await import('../config')
   const clientConfigChain = new WebpackChain()
-  await Promise.all([startServerBuild(getServerWebpack(serverConfigChain)), startClientServer(getClientWebpack(clientConfigChain))])
+  await Promise.all([
+    startServerBuild(getServerWebpack(serverConfigChain)),
+    startClientServer(getClientWebpack(clientConfigChain)),
+  ])
 }
 
 export const webpackBuild = async () => {
@@ -16,5 +19,8 @@ export const webpackBuild = async () => {
   const { getClientWebpack, getServerWebpack } = await import('../config')
   const serverConfigChain = new WebpackChain()
   const clientConfigChain = new WebpackChain()
-  await Promise.all([startServerBuild(getServerWebpack(serverConfigChain)), startClientBuild(getClientWebpack(clientConfigChain))])
+  await Promise.all([
+    startServerBuild(getServerWebpack(serverConfigChain)),
+    startClientBuild(getClientWebpack(clientConfigChain)),
+  ])
 }

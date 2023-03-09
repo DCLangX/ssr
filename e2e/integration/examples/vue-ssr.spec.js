@@ -1,5 +1,3 @@
 /// <reference types="cypress" />
 
-describe('Vue SSR', () => {
-
-})
+describe('Vue SSR', () => {})

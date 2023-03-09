@@ -11,17 +11,17 @@ import {
   run,
   runIfNotDry,
   step,
-  updateVersion
+  updateVersion,
 } from './releaseUtils'
 
-async function main (): Promise<void> {
+async function main(): Promise<void> {
   let targetVersion: string | undefined
 
   const { pkg }: { pkg: string } = await prompts({
     type: 'select',
     name: 'pkg',
     message: 'Select package',
-    choices: packages.map((i) => ({ value: i, title: i }))
+    choices: packages.map((i) => ({ value: i, title: i })),
   })
 
   if (!pkg) return
@@ -33,7 +33,7 @@ async function main (): Promise<void> {
       type: 'select',
       name: 'release',
       message: 'Select release type',
-      choices: getVersionChoices(currentVersion)
+      choices: getVersionChoices(currentVersion),
     })
 
     if (release === 'custom') {
@@ -41,7 +41,7 @@ async function main (): Promise<void> {
         type: 'text',
         name: 'version',
         message: 'Input custom version',
-        initial: currentVersion
+        initial: currentVersion,
       })
       targetVersion = res.version
     } else {
@@ -64,7 +64,7 @@ async function main (): Promise<void> {
   const { yes }: { yes: boolean } = await prompts({
     type: 'confirm',
     name: 'yes',
-    message: `Releasing ${colors.yellow(tag)} Confirm?`
+    message: `Releasing ${colors.yellow(tag)} Confirm?`,
   })
 
   if (!yes) {
@@ -85,7 +85,7 @@ async function main (): Promise<void> {
     '-r',
     '1',
     '-l',
-    pkgName
+    pkgName,
   ]
   await run('npx', changelogArgs, { cwd: pkgDir })
 
@@ -101,9 +101,9 @@ async function main (): Promise<void> {
   }
 
   step('\nPushing to GitHub...')
-  const res = await runIfNotDry('git', ['rev-parse', '--abbrev-ref', 'HEAD'], {
-    stdio: 'pipe'
-  }) as any
+  const res = (await runIfNotDry('git', ['rev-parse', '--abbrev-ref', 'HEAD'], {
+    stdio: 'pipe',
+  })) as any
   await runIfNotDry('git', ['push', 'origin', `refs/tags/${tag}`])
   await runIfNotDry('git', ['push', 'origin', res.stdout])
 

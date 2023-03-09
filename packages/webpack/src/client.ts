@@ -26,7 +26,4 @@ const startClientBuild = async (webpackConfig: webpack.Configuration) => {
   console.log(stats.toString(webpackStatsOption))
 }
 
-export {
-  startClientServer,
-  startClientBuild
-}
+export { startClientServer, startClientBuild }

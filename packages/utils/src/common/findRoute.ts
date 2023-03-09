@@ -5,7 +5,7 @@ const cache = {}
 const cacheLimit = 10000
 let cacheCount = 0
 
-function compilePath (path, options) {
+function compilePath(path, options) {
   const cacheKey = `${options.end}${options.strict}${options.sensitive}`
   const pathCache = cache[cacheKey] || (cache[cacheKey] = {})
 
@@ -23,7 +23,7 @@ function compilePath (path, options) {
   return result
 }
 
-function matchPath (pathname, options = {}) {
+function matchPath(pathname, options = {}) {
   if (typeof options === 'string' || Array.isArray(options)) {
     options = { path: options }
   }
@@ -39,7 +39,7 @@ function matchPath (pathname, options = {}) {
     const { regexp, keys } = compilePath(path, {
       end: exact,
       strict,
-      sensitive
+      sensitive,
     })
     const match = regexp.exec(pathname)
 
@@ -57,17 +57,15 @@ function matchPath (pathname, options = {}) {
       params: keys.reduce((memo, key, index) => {
         memo[key.name] = values[index]
         return memo
-      }, {})
+      }, {}),
     }
   }, null)
 }
 
-function findRoute<T extends {path: string}> (Routes: T[], path: string): T {
+function findRoute<T extends { path: string }>(Routes: T[], path: string): T {
   // 根据请求的path来匹配到对应的Component
-  const route = Routes.find(route => matchPath(path, route) && matchPath(path, route).isExact)
+  const route = Routes.find((route) => matchPath(path, route) && matchPath(path, route).isExact)
   return route
 }
 
-export {
-  findRoute
-}
+export { findRoute }

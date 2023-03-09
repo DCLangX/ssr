@@ -1,15 +1,15 @@
-import { CreateElement } from 'vue'
-import { Store } from 'vuex'
-import { Route } from 'vue-router'
+import { type CreateElement } from 'vue'
+import { type Store } from 'vuex'
+import { type Route } from 'vue-router'
 import { findRoute, isMicro, setStore } from 'ssr-common-utils'
 import { Routes } from './create-router'
-import { ESMFetch, IFeRouteItem } from '../types'
+import { type ESMFetch, type IFeRouteItem } from '../types'
 import { createRouter, createStore, RealVue } from './create'
 
 const { FeRoutes, App, layoutFetch } = Routes
 
 let hasRender = false
-async function getAsyncCombineData (fetch: ESMFetch | undefined, store: Store<any>, router: Route) {
+async function getAsyncCombineData(fetch: ESMFetch | undefined, store: Store<any>, router: Route) {
   let layoutFetchData = {}
   let fetchData = {}
   if (layoutFetch) {
@@ -25,7 +25,7 @@ async function getAsyncCombineData (fetch: ESMFetch | undefined, store: Store<an
 const clientRender = async () => {
   const store = createStore()
   const router = createRouter({
-    base: isMicro() ? window.clientPrefix : window.prefix
+    base: isMicro() ? window.clientPrefix : window.prefix,
   })
   setStore(store)
   if (window.__INITIAL_DATA__) {
@@ -33,25 +33,32 @@ const clientRender = async () => {
   }
   const fetchData = window.__INITIAL_DATA__ ?? {}
   const reactiveFetchData = {
-    value: window.__INITIAL_DATA__ ?? {}
+    value: window.__INITIAL_DATA__ ?? {},
   }
   const asyncData = {
-    value: window.__INITIAL_DATA__ ?? {}
+    value: window.__INITIAL_DATA__ ?? {},
   }
   const params = {
-    render: (h: CreateElement) => h('div', {
-      attrs: {
-        id: 'app'
-      }
-    }, [h(App, {
-      props: {
-        fetchData,
-        reactiveFetchData,
-        asyncData
-      }
-    })]),
+    render: (h: CreateElement) =>
+      h(
+        'div',
+        {
+          attrs: {
+            id: 'app',
+          },
+        },
+        [
+          h(App, {
+            props: {
+              fetchData,
+              reactiveFetchData,
+              asyncData,
+            },
+          }),
+        ]
+      ),
     store,
-    router
+    router,
   }
   const app = new RealVue(params)
 
@@ -61,9 +68,9 @@ const clientRender = async () => {
       const route = findRoute<IFeRouteItem>(FeRoutes, to.path)
       const { fetch } = route
       const combineAysncData = await getAsyncCombineData(fetch, store, to)
-      to.matched?.forEach(item => {
+      to.matched?.forEach((item) => {
         item.props = Object.assign({}, item.props ?? {}, {
-          fetchData: combineAysncData
+          fetchData: combineAysncData,
         })
       })
       reactiveFetchData.value = combineAysncData
@@ -80,6 +87,4 @@ const clientRender = async () => {
 
 clientRender()
 
-export {
-  clientRender
-}
+export { clientRender }

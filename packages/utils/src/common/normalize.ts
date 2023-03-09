@@ -23,7 +23,7 @@ export const normalizeEndPath = (path: string) => {
 }
 
 export const isMicro = () => {
-  return !!((window as any).microApp)
+  return !!(window as any).microApp
 }
 
 export const combineRoutes = (declareRoutes: any, manualRoutes: any): any => {
@@ -31,14 +31,16 @@ export const combineRoutes = (declareRoutes: any, manualRoutes: any): any => {
   const manualRoutesType = manualRoutes as ReactRoutesType
   const Routes = {
     ...declareRoutesType,
-    ...manualRoutesType
+    ...manualRoutesType,
   }
   if (manualRoutesType.FeRoutes) {
     // 声明式路由覆盖约定式路由同名path
-    const combineRoutes = declareRoutesType.FeRoutes.map(route => manualRoutesType.FeRoutes.find(e => e.path === route.path) ?? route)
-    manualRoutesType.FeRoutes.forEach(route => {
+    const combineRoutes = declareRoutesType.FeRoutes.map(
+      (route) => manualRoutesType.FeRoutes.find((e) => e.path === route.path) ?? route
+    )
+    manualRoutesType.FeRoutes.forEach((route) => {
       // 补充声明式路由新增的配置
-      const found = combineRoutes.find(e => e.path === route.path)
+      const found = combineRoutes.find((e) => e.path === route.path)
       if (!found) {
         combineRoutes.push(route)
       }
@@ -46,5 +48,4 @@ export const combineRoutes = (declareRoutes: any, manualRoutes: any): any => {
     Routes.FeRoutes = combineRoutes
   }
   return Routes
-
 }

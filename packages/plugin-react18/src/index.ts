@@ -3,7 +3,7 @@ import { loadConfig } from 'ssr-common-utils'
 const { isVite, optimize } = loadConfig()
 const spinner = require('ora')('Building')
 
-export function clientPlugin () {
+export function clientPlugin() {
   return {
     name: 'plugin-react',
     start: async () => {
@@ -42,7 +42,7 @@ export function clientPlugin () {
           await webpackBuild()
         }
       }
-    }
+    },
   }
 }
 

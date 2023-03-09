@@ -4,13 +4,13 @@ import { Readable, PassThrough } from 'stream'
 const slice = Array.prototype.slice
 
 class StringToStream extends Readable {
-  constructor (str: string) {
+  constructor(str: string) {
     super()
     this._str = str
     this._encoding = 'utf8'
   }
 
-  _read () {
+  _read() {
     if (!this.ended) {
       process.nextTick(() => {
         this.push(Buffer.from(this._str, this._encoding))
@@ -21,7 +21,7 @@ class StringToStream extends Readable {
   }
 }
 
-function mergeStream2 (...arg: any[]): Readable {
+function mergeStream2(...arg: any[]): Readable {
   const streamsQueue = []
   const args = slice.call(arguments)
   let merging = false
@@ -43,7 +43,7 @@ function mergeStream2 (...arg: any[]): Readable {
   }
   const mergedStream = PassThrough(options)
 
-  function addStream () {
+  function addStream() {
     for (let i = 0, len = arguments.length; i < len; i++) {
       streamsQueue.push(pauseStreams(arguments[i], options))
     }
@@ -51,7 +51,7 @@ function mergeStream2 (...arg: any[]): Readable {
     return this
   }
 
-  function mergeStream () {
+  function mergeStream() {
     if (merging) {
       return
     }
@@ -68,15 +68,15 @@ function mergeStream2 (...arg: any[]): Readable {
     // eslint-disable-next-line
     let pipesCount = streams.length + 1
 
-    function next () {
+    function next() {
       if (--pipesCount > 0) {
         return
       }
       merging = false
       mergeStream()
     }
-    function pipe (stream) {
-      function onend () {
+    function pipe(stream) {
+      function onend() {
         stream.removeListener('merge2UnpipeEnd', onend)
         stream.removeListener('end', onend)
         if (doPipeError) {
@@ -84,7 +84,7 @@ function mergeStream2 (...arg: any[]): Readable {
         }
         next()
       }
-      function onerror (err) {
+      function onerror(err) {
         mergedStream.emit('error', err)
       }
       // skip ended stream
@@ -111,7 +111,7 @@ function mergeStream2 (...arg: any[]): Readable {
     next()
   }
 
-  function endStream () {
+  function endStream() {
     merging = false
     // emit 'queueDrain' when all streams merged.
     mergedStream.emit('queueDrain')
@@ -126,14 +126,14 @@ function mergeStream2 (...arg: any[]): Readable {
     stream.emit('merge2UnpipeEnd')
   })
 
-  if (args.length) {
+  if (args.length > 0) {
     addStream.apply(null, args)
   }
   return mergedStream
 }
 
 // check and pause streams for pipe.
-function pauseStreams (streams, options) {
+function pauseStreams(streams, options) {
   if (!Array.isArray(streams)) {
     // Backwards-compat with old-style streams
     if (!streams._readableState && streams.pipe) {
@@ -150,7 +150,4 @@ function pauseStreams (streams, options) {
   }
   return streams
 }
-export {
-  StringToStream,
-  mergeStream2
-}
+export { StringToStream, mergeStream2 }

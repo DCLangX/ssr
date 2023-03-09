@@ -4,21 +4,21 @@ import type { RouteLocationNormalizedLoaded } from 'vue-router'
 import type { ISSRMidwayKoaContext, ISSRNestContext, ISSRContext, ESMFeRouteItem } from 'ssr-types'
 import type { Pinia } from 'pinia'
 
-export interface ParamsKoa<T={}, U={}> {
+export interface ParamsKoa<T = {}, U = {}> {
   store: Store<T>
   router: RouteLocationNormalizedLoaded
   ctx?: ISSRMidwayKoaContext<U>
   pinia: Pinia
 }
 
-export interface ParamsNest<T={}, U={}> {
+export interface ParamsNest<T = {}, U = {}> {
   store: Store<T>
   router: RouteLocationNormalizedLoaded
   ctx?: ISSRNestContext<U>
   pinia: Pinia
 }
 
-export interface Params<T={}, U={}> {
+export interface Params<T = {}, U = {}> {
   store: Store<T>
   router: RouteLocationNormalizedLoaded
   ctx?: ISSRContext<U>
@@ -53,10 +53,6 @@ export interface vue3AppParams {
   asyncData: any
   manifest: Record<string, string | undefined>
   isCsr: boolean
-  jsInject: Array<VNode<RendererNode, RendererElement, {
-    [key: string]: any
-  }>>
-  cssInject: Array<VNode<RendererNode, RendererElement, {
-    [key: string]: any
-  }>>
+  jsInject: Array<VNode<RendererNode, RendererElement, Record<string, any>>>
+  cssInject: Array<VNode<RendererNode, RendererElement, Record<string, any>>>
 }

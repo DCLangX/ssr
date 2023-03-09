@@ -1,11 +1,9 @@
 import { resolve, sep } from 'path'
 
 export const normalizePosixPath = (value: string): string => {
-  return sep === '\\'
-    ? value.replace(/\\/g, '/')
-    : value
+  return sep === '\\' ? value.replace(/\\/g, '/') : value
 }
-export function getPkgName (modulePath: string, packageFolder = 'node_modules') {
+export function getPkgName(modulePath: string, packageFolder = 'node_modules') {
   if (typeof modulePath === 'string' && modulePath.includes(packageFolder)) {
     const path = normalizePosixPath(modulePath)
     const segments = path.split('/')
@@ -34,7 +32,10 @@ export const getDependencies = (abPath: string, allDependencies: Record<string, 
   const pkgName = getPkgName(abPath)
 
   const pkgJson = resolve(abPath.slice(0, lastIndex), `./node_modules/${pkgName}/package.json`)
-  const { dependencies = {}, peerDependencies = {} }: {
+  const {
+    dependencies = {},
+    peerDependencies = {},
+  }: {
     dependencies?: Record<string, string>
     peerDependencies?: Record<string, string>
   } = require(pkgJson)
@@ -43,13 +44,12 @@ export const getDependencies = (abPath: string, allDependencies: Record<string, 
       allDependencies[key] = value
       try {
         const childId = require.resolve(key, {
-          paths: [abPath]
+          paths: [abPath],
         })
         getDependencies(childId, allDependencies)
       } catch (error) {
         // ignore it, some package has not correct main field or exports field in package.json like @babel/runtime cause require.resolve throw error
       }
     }
-
   })
 }

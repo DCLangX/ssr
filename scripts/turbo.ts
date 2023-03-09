@@ -1,6 +1,5 @@
-import execa from 'execa';
-
-(async () => {
+import execa from 'execa'
+;(async () => {
   const args = require('minimist')(process.argv.slice(2))
   const filter = args.filter || './packages/*'
   const extra = (args._ || []).join(' ')
@@ -9,11 +8,11 @@ import execa from 'execa';
     filter,
     extra,
     cache: args.cache,
-    parallel: args.parallel
+    parallel: args.parallel,
   })
 })()
 
-function turbo (opts: {
+function turbo(opts: {
   filter: string
   cmd: string
   extra?: string
@@ -31,13 +30,12 @@ function turbo (opts: {
     '--cache-dir=".turbo"',
     cacheCmd,
     parallelCmd,
-    extraCmd
-  ]
-    .filter(Boolean)
+    extraCmd,
+  ].filter(Boolean)
 
   execa('turbo', options, {
     cwd: process.cwd(),
     stdio: 'inherit',
-    shell: true
+    shell: true,
   })
 }

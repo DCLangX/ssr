@@ -10,8 +10,6 @@ const initialSSRDevProxy = async (app: any, options?: proxyOptions) => {
     app.use(middleware)
   }
 }
-export {
-  initialSSRDevProxy
-}
+export { initialSSRDevProxy }
 
 export * from './proxy'

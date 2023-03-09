@@ -5,10 +5,10 @@ export const setHeader = (ctx: ISSRContext, serverFrameWork: string) => {
   if (serverFrameWork === 'ssr-plugin-midway') {
     ctx.response.type = 'text/html;charset=utf-8'
   } else if (serverFrameWork === 'ssr-plugin-nestjs') {
-    if ((ctx as ISSRNestContext | FastifyContext).response.setHeader) {
-      (ctx as ISSRNestContext).response.setHeader('Content-type', 'text/html;charset=utf-8')
+    if ((ctx as ISSRNestContext | FastifyContext).response.setHeader != null) {
+      ;(ctx as ISSRNestContext).response.setHeader('Content-type', 'text/html;charset=utf-8')
     } else {
-      (ctx as FastifyContext).response.header('Content-type', 'text/html;charset=utf-8')
+      ;(ctx as FastifyContext).response.header('Content-type', 'text/html;charset=utf-8')
     }
   }
 }
@@ -22,11 +22,14 @@ const readAsyncChunk = async (config: IConfig): Promise<Record<string, string>> 
     return {}
   }
 }
-const addAsyncChunk = async (webpackChunkName: string, config: IConfig, type: 'css'|'js') => {
+const addAsyncChunk = async (webpackChunkName: string, config: IConfig, type: 'css' | 'js') => {
   const arr = []
   const asyncChunkMap = await readAsyncChunk(config)
   for (const key in asyncChunkMap) {
-    if (asyncChunkMap[key].includes(webpackChunkName) || asyncChunkMap[key].includes('client-entry')) {
+    if (
+      asyncChunkMap[key].includes(webpackChunkName) ||
+      asyncChunkMap[key].includes('client-entry')
+    ) {
       arr.push(`${key}.${type}`)
     }
   }
@@ -34,7 +37,7 @@ const addAsyncChunk = async (webpackChunkName: string, config: IConfig, type: 'c
 }
 
 export const nomalrizeOrder = (order: UserConfig['extraJsOrder'], ctx: ISSRContext): string[] => {
-  if (!order) {
+  if (order == null) {
     return []
   }
   if (Array.isArray(order)) {
@@ -44,11 +47,22 @@ export const nomalrizeOrder = (order: UserConfig['extraJsOrder'], ctx: ISSRConte
   }
 }
 
-export const getAsyncCssChunk = async (ctx: ISSRContext, webpackChunkName: string, config: IConfig): Promise<string[]> => {
+export const getAsyncCssChunk = async (
+  ctx: ISSRContext,
+  webpackChunkName: string,
+  config: IConfig
+): Promise<string[]> => {
   const { cssOrder, extraCssOrder, cssOrderPriority } = config
-  const combineOrder = cssOrder.concat([...nomalrizeOrder(extraCssOrder, ctx), ...await addAsyncChunk(webpackChunkName, config, 'css'), `${webpackChunkName}.css`])
-  if (cssOrderPriority) {
-    const priority = typeof cssOrderPriority === 'function' ? cssOrderPriority({ chunkName: webpackChunkName }) : cssOrderPriority
+  const combineOrder = cssOrder.concat([
+    ...nomalrizeOrder(extraCssOrder, ctx),
+    ...(await addAsyncChunk(webpackChunkName, config, 'css')),
+    `${webpackChunkName}.css`,
+  ])
+  if (cssOrderPriority != null) {
+    const priority =
+      typeof cssOrderPriority === 'function'
+        ? cssOrderPriority({ chunkName: webpackChunkName })
+        : cssOrderPriority
     combineOrder.sort((a, b) => {
       // 没有显示指定的路由优先级统一为 0
       return (priority[b] || 0) - (priority[a] || 0)
@@ -56,11 +70,21 @@ export const getAsyncCssChunk = async (ctx: ISSRContext, webpackChunkName: strin
   }
   return combineOrder
 }
-export const getAsyncJsChunk = async (ctx: ISSRContext, webpackChunkName: string, config: IConfig): Promise<string[]> => {
+export const getAsyncJsChunk = async (
+  ctx: ISSRContext,
+  webpackChunkName: string,
+  config: IConfig
+): Promise<string[]> => {
   const { jsOrder, extraJsOrder, jsOrderPriority } = config
-  const combineOrder = jsOrder.concat([...nomalrizeOrder(extraJsOrder, ctx), ...await addAsyncChunk(webpackChunkName, config, 'js')])
-  if (jsOrderPriority) {
-    const priority = typeof jsOrderPriority === 'function' ? jsOrderPriority({ chunkName: webpackChunkName }) : jsOrderPriority
+  const combineOrder = jsOrder.concat([
+    ...nomalrizeOrder(extraJsOrder, ctx),
+    ...(await addAsyncChunk(webpackChunkName, config, 'js')),
+  ])
+  if (jsOrderPriority != null) {
+    const priority =
+      typeof jsOrderPriority === 'function'
+        ? jsOrderPriority({ chunkName: webpackChunkName })
+        : jsOrderPriority
     combineOrder.sort((a, b) => {
       // 没有显示指定的路由优先级统一为 0
       return (priority[b] || 0) - (priority[a] || 0)
@@ -69,16 +93,31 @@ export const getAsyncJsChunk = async (ctx: ISSRContext, webpackChunkName: string
   return combineOrder
 }
 
-export const getUserScriptVue = (script: UserConfig['customeHeadScript'], ctx: ISSRContext, h: any, type: 'vue3'| 'vue') => {
-  if (!script) {
+export const getUserScriptVue = (
+  script: UserConfig['customeHeadScript'],
+  ctx: ISSRContext,
+  h: any,
+  type: 'vue3' | 'vue'
+) => {
+  if (script == null) {
     return []
   }
-  return (Array.isArray(script) ? script : script(ctx)).map(item => h(item.tagName ?? 'script', Object.assign({}, item.describe, type === 'vue' ? {
-    domProps: {
-      innerHTML: item.content
-    }
-  } : {
-    innerHTML: item.content
-  }
-  )))
+  return (Array.isArray(script) ? script : script(ctx)).map((item) =>
+    h(
+      item.tagName ?? 'script',
+      Object.assign(
+        {},
+        item.describe,
+        type === 'vue'
+          ? {
+              domProps: {
+                innerHTML: item.content,
+              },
+            }
+          : {
+              innerHTML: item.content,
+            }
+      )
+    )
+  )
 }

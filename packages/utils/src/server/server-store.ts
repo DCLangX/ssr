@@ -14,10 +14,16 @@ export interface AppStore {
   app?: App
 }
 
-type StorageReturnVal = Promise<string | Readable | NodeJS.ReadableStream | PipeableStream | {
-  html: string
-  teleportsContext: any
-}>
+type StorageReturnVal = Promise<
+  | string
+  | Readable
+  | NodeJS.ReadableStream
+  | PipeableStream
+  | {
+      html: string
+      teleportsContext: any
+    }
+>
 const localStorage = new AsyncLocalStorage<StoreData>()
 
 export const localStorageWrapper = {
@@ -28,7 +34,7 @@ export const localStorageWrapper = {
     })
     return res
   },
-  getStore: () => localStorage.getStore()
+  getStore: () => localStorage.getStore(),
 }
 
 const appLocalStoreage = new AsyncLocalStorage<AppStore>()
@@ -42,7 +48,7 @@ export const appLocalStoreageWrapper = {
     return res
   },
 
-  getStore: () => appLocalStoreage.getStore()
+  getStore: () => appLocalStoreage.getStore(),
 }
 
 export const useStore = () => localStorage.getStore()?.store

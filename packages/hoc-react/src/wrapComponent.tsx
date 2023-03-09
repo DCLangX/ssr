@@ -1,8 +1,14 @@
 import * as React from 'react'
 import 'react-router'
 import { useContext, useEffect, useState } from 'react'
-import { withRouter, RouteComponentProps } from 'react-router-dom'
-import { DynamicFC, StaticFC, Action, ReactESMFetch, ReactFetch } from 'ssr-types'
+import { withRouter, type RouteComponentProps } from 'react-router-dom'
+import {
+  type DynamicFC,
+  type StaticFC,
+  type Action,
+  type ReactESMFetch,
+  type ReactFetch,
+} from 'ssr-types'
 import { STORE_CONTEXT } from '_build/create-context'
 
 let hasRender = false
@@ -12,7 +18,12 @@ interface fetchType {
   layoutFetch?: ReactFetch
 }
 
-const fetchAndDispatch = async ({ fetch, layoutFetch }: fetchType, dispatch: React.Dispatch<Action>, routerProps: RouteComponentProps, state: any) => {
+const fetchAndDispatch = async (
+  { fetch, layoutFetch }: fetchType,
+  dispatch: React.Dispatch<Action>,
+  routerProps: RouteComponentProps,
+  state: any
+) => {
   let asyncLayoutData = {}
   let asyncData = {}
   if (layoutFetch) {
@@ -27,10 +38,10 @@ const fetchAndDispatch = async ({ fetch, layoutFetch }: fetchType, dispatch: Rea
 
   await dispatch({
     type: 'updateContext',
-    payload: combineData
+    payload: combineData,
   })
 }
-function wrapComponent (WrappedComponent: DynamicFC|StaticFC) {
+function wrapComponent(WrappedComponent: DynamicFC | StaticFC) {
   return withRouter((props) => {
     const [ready, setReady] = useState(WrappedComponent.name !== 'dynamicComponent')
     const { state, dispatch } = useContext(STORE_CONTEXT)
@@ -43,7 +54,7 @@ function wrapComponent (WrappedComponent: DynamicFC|StaticFC) {
       if (hasRender || !window.__USE_SSR__) {
         // ssr 情况下只有路由切换的时候才需要调用 fetch
         // csr 情况首次访问页面也需要调用 fetch
-        const { fetch, layoutFetch } = (WrappedComponent as DynamicFC)
+        const { fetch, layoutFetch } = WrappedComponent as DynamicFC
         await fetchAndDispatch({ fetch, layoutFetch }, dispatch!, props, state)
         if (WrappedComponent.name === 'dynamicComponent') {
           WrappedComponent = (await (WrappedComponent as DynamicFC)()).default
@@ -54,12 +65,8 @@ function wrapComponent (WrappedComponent: DynamicFC|StaticFC) {
       }
       hasRender = true
     }
-    return (
-      ready ? <WrappedComponent {...props}></WrappedComponent> : null
-    )
+    return ready ? <WrappedComponent {...props}></WrappedComponent> : null
   })
 }
 
-export {
-  wrapComponent
-}
+export { wrapComponent }

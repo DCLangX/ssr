@@ -1,16 +1,21 @@
 import { h, createSSRApp, createApp, reactive, renderSlot } from 'vue'
-import { Store } from 'vuex'
-import { RouteLocationNormalizedLoaded } from 'vue-router'
+import { type Store } from 'vuex'
+import { type RouteLocationNormalizedLoaded } from 'vue-router'
 import { findRoute, isMicro, setStore, setPinia, setApp } from 'ssr-common-utils'
-import { createPinia, Pinia } from 'pinia'
+import { createPinia, type Pinia } from 'pinia'
 import { createRouter, createStore } from './create'
 import { Routes } from './combine-router'
-import { ESMFetch, IFeRouteItem } from '../types'
+import { type ESMFetch, type IFeRouteItem } from '../types'
 
 const { FeRoutes, App, layoutFetch } = Routes
 
 let hasRender = false
-async function getAsyncCombineData (fetch: ESMFetch | undefined, store: Store<any>, router: RouteLocationNormalizedLoaded, pinia: Pinia) {
+async function getAsyncCombineData(
+  fetch: ESMFetch | undefined,
+  store: Store<any>,
+  router: RouteLocationNormalizedLoaded,
+  pinia: Pinia
+) {
   const layoutFetchData = layoutFetch ? await layoutFetch({ store, router, pinia }) : {}
   let fetchData = {}
 
@@ -25,7 +30,7 @@ const clientRender = async () => {
   const store = createStore()
   const router = createRouter({
     base: isMicro() ? window.clientPrefix : window.prefix,
-    hashRouter: window.hashRouter
+    hashRouter: window.hashRouter,
   })
   const pinia = createPinia()
   setStore(store)
@@ -41,22 +46,24 @@ const clientRender = async () => {
   }
 
   const asyncData = reactive({
-    value: window.__INITIAL_DATA__ ?? {}
+    value: window.__INITIAL_DATA__ ?? {},
   })
   const reactiveFetchData = reactive({
-    value: window.__INITIAL_DATA__ ?? {}
+    value: window.__INITIAL_DATA__ ?? {},
   })
   const fetchData = window.__INITIAL_DATA__ ?? {} // will be remove at next major version
 
   const app = create({
-    render () {
-      return renderSlot(this.$slots, 'default', {}, () => [h(App, {
-        asyncData,
-        fetchData,
-        reactiveFetchData,
-        ssrApp: app
-      })])
-    }
+    render() {
+      return renderSlot(this.$slots, 'default', {}, () => [
+        h(App, {
+          asyncData,
+          fetchData,
+          reactiveFetchData,
+          ssrApp: app,
+        }),
+      ])
+    },
   })
   app.use(store)
   app.use(router)
@@ -67,9 +74,9 @@ const clientRender = async () => {
       // 找到要进入的组件并提前执行 fetch 函数
       const { fetch } = findRoute<IFeRouteItem>(FeRoutes, to.path)
       const combineAysncData = await getAsyncCombineData(fetch, store, to, pinia)
-      to.matched?.forEach(item => {
+      to.matched?.forEach((item) => {
         item.props.default = Object.assign({}, item.props.default ?? {}, {
-          fetchData: combineAysncData
+          fetchData: combineAysncData,
         })
       })
       reactiveFetchData.value = combineAysncData
@@ -82,12 +89,10 @@ const clientRender = async () => {
 
   app.mount('#app', !!window.__USE_SSR__) // judge ssr/csr
   if (!window.__USE_VITE__) {
-    (module as any)?.hot?.accept?.() // webpack hmr for vue jsx
+    ;(module as any)?.hot?.accept?.() // webpack hmr for vue jsx
   }
 }
 
 clientRender()
 
-export {
-  clientRender
-}
+export { clientRender }

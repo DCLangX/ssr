@@ -1,4 +1,4 @@
-import * as webpack from 'webpack'
+import type * as webpack from 'webpack'
 import { loadConfig } from 'ssr-common-utils'
 import { webpackPromisify } from './utils/promisify'
 
@@ -8,6 +8,4 @@ const startServerBuild = async (webpackConfig: webpack.Configuration) => {
   console.log(stats.toString(webpackStatsOption))
 }
 
-export {
-  startServerBuild
-}
+export { startServerBuild }

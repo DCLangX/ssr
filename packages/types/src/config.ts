@@ -3,12 +3,12 @@ import type WebpackChainConfig from 'webpack-chain'
 import type { PluginOption, ServerOptions, UserConfig as ViteConfig, CSSOptions } from 'vite'
 import type { Plugin as PostCssPlugin } from 'postcss'
 import type { RollupBabelInputPluginOptions } from '@rollup/plugin-babel'
-import { Argv } from './yargs'
-import { ISSRContext } from './ctx'
+import { type Argv } from './yargs'
+import { type ISSRContext } from './ctx'
 
 export interface SSRModule extends compilation.Module {
   resource?: string
-  dependencies?: Array<{request: string}>
+  dependencies?: Array<{ request: string }>
   nameForCondition?: () => string
 }
 
@@ -23,9 +23,17 @@ export type Chain = WebpackChainConfig
 
 export type Script = Array<{
   tagName?: string
-  describe?: object | {
-    attrs: object
-  }
+  describe?:
+    | {
+        type: string
+        src: string
+      }
+    | {
+        attrs: {
+          type: string
+          src: string
+        }
+      }
   content?: string
 }>
 
@@ -52,8 +60,12 @@ export interface IConfig {
   jsOrder: string[]
   extraJsOrder?: ((ctx: ISSRContext) => string[]) | string[] | undefined
   extraCssOrder?: ((ctx: ISSRContext) => string[]) | string[] | undefined
-  jsOrderPriority?: Record<string, number> | ((params: {chunkName: string}) => Record<string, number>)
-  cssOrderPriority?: Record<string, number> | ((params: {chunkName: string}) => Record<string, number>)
+  jsOrderPriority?:
+    | Record<string, number>
+    | ((params: { chunkName: string }) => Record<string, number>)
+  cssOrderPriority?:
+    | Record<string, number>
+    | ((params: { chunkName: string }) => Record<string, number>)
   css?: () => {
     loaderOptions?: {
       cssOptions?: any
@@ -71,7 +83,7 @@ export interface IConfig {
   chainClientConfig: (config: Chain) => void
   webpackStatsOption: Options.Stats
   moduleFileExtensions: string[]
-  whiteList: Array<RegExp|string>
+  whiteList: Array<RegExp | string>
   cloudIDE?: boolean
   prefix: string
   clientPrefix?: string
@@ -86,7 +98,7 @@ export interface IConfig {
   ssrVueLoaderOptions?: any
   csrVueLoaderOptions?: any
   corejs?: boolean
-  corejsOptions?: Object
+  corejsOptions?: object
   https: boolean | object
   babelExtraModule?: RegExp[]
   routerPriority?: Record<string, number>
@@ -109,7 +121,7 @@ export interface IConfig {
   isVite: boolean
   optimize: boolean
   supportOptinalChaining: boolean
-  onError?: (e: any) => (null|string)
+  onError?: (e: any) => null | string
   onReady?: () => any
   viteConfig?: () => {
     common?: {

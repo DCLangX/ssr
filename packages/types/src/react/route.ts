@@ -43,10 +43,10 @@ export interface ParamsNest<T, U> {
   state?: any
 }
 
-export type ReactFetch<T={}, U={}> = (params: Params<T, U>) => Promise<any>
-export type ReactMidwayFetch<T={}, U={}> = (params: ParamsMidway<T, U>) => Promise<any>
-export type ReactMidwayKoaFetch<T={}, U={}> = (params: ParamsMidwayKoa<T, U>) => Promise<any>
-export type ReactNestFetch<T={}, U={}> = (params: ParamsNest<T, U>) => Promise<any>
+export type ReactFetch<T = {}, U = {}> = (params: Params<T, U>) => Promise<any>
+export type ReactMidwayFetch<T = {}, U = {}> = (params: ParamsMidway<T, U>) => Promise<any>
+export type ReactMidwayKoaFetch<T = {}, U = {}> = (params: ParamsMidwayKoa<T, U>) => Promise<any>
+export type ReactNestFetch<T = {}, U = {}> = (params: ParamsNest<T, U>) => Promise<any>
 
 export type ReactESMFetch = () => Promise<{
   default: ReactFetch
@@ -54,12 +54,12 @@ export type ReactESMFetch = () => Promise<{
 
 export type ESMLayout = () => Promise<React.FC<LayoutProps>>
 
-export interface StaticFC<T={}> extends React.FC<T> {
+export interface StaticFC<T = {}> extends React.FC<T> {
   fetch?: ReactESMFetch
   layoutFetch?: ReactFetch
 }
 
-export interface DynamicFC<T = {}> extends React.FC<T>{
+export interface DynamicFC<T = {}> extends React.FC<T> {
   (): Promise<{
     default: StaticFC<T>
   }>
@@ -68,14 +68,14 @@ export interface DynamicFC<T = {}> extends React.FC<T>{
   layoutFetch?: ReactFetch
 }
 
-export type ReactESMFeRouteItem<T = {}, U={}> = {
+export type ReactESMFeRouteItem<T = {}, U = {}> = {
   path: string
   fetch?: ReactESMFetch
   component: DynamicFC<T>
   webpackChunkName: string
 } & U
 
-export type ReactESMPreloadFeRouteItem<T = {}, U={}> = {
+export type ReactESMPreloadFeRouteItem<T = {}, U = {}> = {
   path: string
   fetch?: ReactESMFetch
   component: DynamicFC<T> | StaticFC<T>
@@ -91,7 +91,7 @@ export interface ReactRoutesType {
   reducer?: any
 }
 
-export interface IContext<T=any> {
+export interface IContext<T = any> {
   state?: T
   dispatch?: React.Dispatch<Action>
 }

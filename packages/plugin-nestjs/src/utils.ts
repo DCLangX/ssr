@@ -1,9 +1,12 @@
-import { Argv } from 'ssr-types'
+import { type Argv } from 'ssr-types'
 
-const getNormalizeArgv = (argv: Argv, options: {
-  singleDash?: string[]
-  doubleDash?: string[]
-}) => {
+const getNormalizeArgv = (
+  argv: Argv,
+  options: {
+    singleDash?: string[]
+    doubleDash?: string[]
+  }
+) => {
   const { singleDash, doubleDash } = options
   let normalizeArgv = ''
   for (const key in argv) {
@@ -21,6 +24,4 @@ const getNormalizeArgv = (argv: Argv, options: {
   return normalizeArgv
 }
 
-export {
-  getNormalizeArgv
-}
+export { getNormalizeArgv }

@@ -3,7 +3,7 @@ import { resolve } from 'path'
 import { fork } from 'child_process'
 import * as yargs from 'yargs'
 import { coerce } from 'semver'
-import { Argv, IPlugin } from 'ssr-types'
+import { type Argv, type IPlugin } from 'ssr-types'
 import { generateHtml } from './html'
 import { cleanOutDir } from './clean'
 import { handleEnv } from './preprocess'
@@ -13,18 +13,25 @@ import { ssg } from './ssg'
 const spinnerProcess = fork(resolve(__dirname, './spinner')) // 单独创建子进程跑 spinner 否则会被后续的 同步代码 block 导致 loading 暂停
 
 const spinner = {
-  start: () => spinnerProcess.send({
-    message: 'start'
-  }),
-  stop: () => spinnerProcess.send({
-    message: 'stop'
-  })
+  start: () =>
+    spinnerProcess.send({
+      message: 'start',
+    }),
+  stop: () =>
+    spinnerProcess.send({
+      message: 'stop',
+    }),
 }
 
 const startOrBuild = async (argv: Argv, type: 'start' | 'build') => {
-  const { copyReactContext, judgeFramework, judgeServerFramework, logGreen, logWarning } = await import('ssr-common-utils')
+  const { copyReactContext, judgeFramework, judgeServerFramework, logGreen, logWarning } =
+    await import('ssr-common-utils')
 
-  if (!argv.vite && coerce(process.version)?.major as number > 16 && !process.env.NODE_OPTIONS?.includes('--openssl-legacy-provider')) {
+  if (
+    !argv.vite &&
+    (coerce(process.version)?.major as number) > 16 &&
+    !process.env.NODE_OPTIONS?.includes('--openssl-legacy-provider')
+  ) {
     logWarning(`crypto.createHash('md4') is not supported when node version > 16,
     Please use NODE_OPTIONS=--openssl-legacy-provider ssr start to start project
     If you are using windows please use set NODE_OPTIONS=--openssl-legacy-provider, ref https://github.com/webpack/webpack/issues/14532
@@ -95,8 +102,10 @@ const deployFunc = async (argv: Argv) => {
   const serverFramework = judgeServerFramework()
   const { serverPlugin } = await import(serverFramework)
   const server: IPlugin['serverPlugin'] = serverPlugin()
-  if (!server?.deploy) {
-    console.log('当前插件不支持 deploy 功能，请使用 ssr-plugin-midway 插件 参考 https://www.yuque.com/midwayjs/faas/migrate_egg 或扫码进群了解')
+  if (server?.deploy == null) {
+    console.log(
+      '当前插件不支持 deploy 功能，请使用 ssr-plugin-midway 插件 参考 https://www.yuque.com/midwayjs/faas/migrate_egg 或扫码进群了解'
+    )
     return
   }
   await server?.deploy?.(argv)
@@ -105,73 +114,91 @@ const deployFunc = async (argv: Argv) => {
 
 const cliDesc = {
   web: {
-    desc: 'only start client plugin'
+    desc: 'only start client plugin',
   },
   api: {
-    desc: 'only start server plugin'
-  }
+    desc: 'only start server plugin',
+  },
 }
 yargs
-  .command('start', 'Start Server', yargs => yargs.options({
-    vite: {
-      desc: 'Start application by vite'
-    },
-    port: {
-      desc: 'Setting application server port, default is 3000'
-    },
-    optimize: {
-      alias: 'o',
-      desc: 'Optimize webpack bundle for high performance'
-    },
-    help: {
-      alias: 'h',
-      desc: 'In midway, use --help to speed up ts compile'
-    },
-    ...cliDesc
-  }), async (argv: Argv) => {
-    await startFunc(argv)
-  })
-  .command('build', 'Build application by webpack or vite', yargs => yargs.options({
-    analyze: {
-      alias: 'a',
-      desc: 'Analyze bundle result when using webpack for build'
-    },
-    optimize: {
-      alias: 'o',
-      desc: 'Optimize webpack bundle for high performance'
-    },
-    vite: {
-      desc: 'Build application by vite'
-    },
-    legacy: {
-      desc: 'Close default rollup manulChunks setting in vite mode'
-    },
-    html: {
-      desc: 'Build application as a single html'
-    },
-    ssg: {
-      desc: 'Build with Static Site Generation (Pre Render)'
-    },
-    ...cliDesc
-  }), async (argv: Argv) => {
-    const { logWarning } = await import('ssr-common-utils')
-    if (argv.vite) {
-      logWarning(`ssr build by vite is beta now, if you find some bugs, please submit an issue on https://github.com/zhangyuang/ssr/issues or you can use ssr build --vite --legacy which will close manualChunks
+  .command(
+    'start',
+    'Start Server',
+    (yargs) =>
+      yargs.options({
+        vite: {
+          desc: 'Start application by vite',
+        },
+        port: {
+          desc: 'Setting application server port, default is 3000',
+        },
+        optimize: {
+          alias: 'o',
+          desc: 'Optimize webpack bundle for high performance',
+        },
+        help: {
+          alias: 'h',
+          desc: 'In midway, use --help to speed up ts compile',
+        },
+        ...cliDesc,
+      }),
+    async (argv: Argv) => {
+      await startFunc(argv)
+    }
+  )
+  .command(
+    'build',
+    'Build application by webpack or vite',
+    (yargs) =>
+      yargs.options({
+        analyze: {
+          alias: 'a',
+          desc: 'Analyze bundle result when using webpack for build',
+        },
+        optimize: {
+          alias: 'o',
+          desc: 'Optimize webpack bundle for high performance',
+        },
+        vite: {
+          desc: 'Build application by vite',
+        },
+        legacy: {
+          desc: 'Close default rollup manulChunks setting in vite mode',
+        },
+        html: {
+          desc: 'Build application as a single html',
+        },
+        ssg: {
+          desc: 'Build with Static Site Generation (Pre Render)',
+        },
+        ...cliDesc,
+      }),
+    async (argv: Argv) => {
+      const { logWarning } = await import('ssr-common-utils')
+      if (argv.vite) {
+        logWarning(`ssr build by vite is beta now, if you find some bugs, please submit an issue on https://github.com/zhangyuang/ssr/issues or you can use ssr build --vite --legacy which will close manualChunks
       to get a stable bundle result but maybe some performance loss
       `)
+      }
+      await buildFunc(argv)
     }
-    await buildFunc(argv)
-  })
-  .command('deploy', 'Deploy function to aliyun cloud or tencent cloud', yargs => yargs.options({
-    tencent: {
-      desc: 'deploy application to tencent clound'
+  )
+  .command(
+    'deploy',
+    'Deploy function to aliyun cloud or tencent cloud',
+    (yargs) =>
+      yargs.options({
+        tencent: {
+          desc: 'deploy application to tencent clound',
+        },
+      }),
+    async (argv: Argv) => {
+      await deployFunc(argv)
     }
-  }), async (argv: Argv) => {
-    await deployFunc(argv)
-  })
+  )
   .command('update', 'check dependencies version is latest', {}, async (argv: Argv) => {
     spinner.start()
-    const { update } = await import ('./update')
+    const { update } = await import('./update')
     await update()
     spinner.stop()
   })
@@ -179,7 +206,7 @@ yargs
   .option('version', {
     alias: 'v',
     default: false,
-    desc: 'Show current version'
+    desc: 'Show current version',
   })
   .fail((msg, err) => {
     if (err) {
@@ -191,8 +218,4 @@ yargs
   })
   .parse()
 
-export {
-  startFunc,
-  buildFunc,
-  deployFunc
-}
+export { startFunc, buildFunc, deployFunc }

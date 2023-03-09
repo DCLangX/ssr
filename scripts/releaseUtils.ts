@@ -20,14 +20,17 @@ if (isDryRun) {
   console.log()
 }
 export const accessFile = async (file: string) => {
-  const result = await promises.access(file)
+  const result = await promises
+    .access(file)
     .then(() => true)
     .catch(() => false)
   return result
 }
-export const packages = readdirSync(resolve(process.cwd(), './packages')).filter(item => item !== '.DS_Store')
+export const packages = readdirSync(resolve(process.cwd(), './packages')).filter(
+  (item) => item !== '.DS_Store'
+)
 
-export function getPackageInfo (pkgName: string) {
+export function getPackageInfo(pkgName: string) {
   const pkgDir = path.resolve(__dirname, '../packages/' + pkgName)
 
   if (!existsSync(pkgDir)) {
@@ -51,80 +54,68 @@ export function getPackageInfo (pkgName: string) {
     pkgName,
     pkgDir,
     pkgPath,
-    currentVersion
+    currentVersion,
   }
 }
 
-export async function run (
-  bin: string,
-  args: string[],
-  opts: ExecaOptions<string> = {}
-) {
+export async function run(bin: string, args: string[], opts: ExecaOptions<string> = {}) {
   return await execa(bin, args, { stdio: 'inherit', ...opts })
 }
 
-export async function dryRun (
-  bin: string,
-  args: string[],
-  opts?: ExecaOptions<string>
-) {
-  return console.log(
-    colors.blue(`[dryrun] ${bin} ${args.join(' ')}`),
-    opts || ''
-  )
+export async function dryRun(bin: string, args: string[], opts?: ExecaOptions<string>) {
+  return console.log(colors.blue(`[dryrun] ${bin} ${args.join(' ')}`), opts || '')
 }
 
 export const runIfNotDry = isDryRun ? dryRun : run
 
-export function step (msg: string) {
+export function step(msg: string) {
   return console.log(colors.cyan(msg))
 }
 
-export function getVersionChoices (currentVersion: string) {
+export function getVersionChoices(currentVersion: string) {
   const currentBeta = currentVersion.includes('beta')
 
-  const inc: (i: ReleaseType) => string = (i) =>
-    semver.inc(currentVersion, i, 'beta')!
+  const inc: (i: ReleaseType) => string = (i) => semver.inc(currentVersion, i, 'beta')!
 
   const versionChoices = [
     {
       title: 'next',
-      value: inc(currentBeta ? 'prerelease' : 'patch')
+      value: inc(currentBeta ? 'prerelease' : 'patch'),
     },
     ...(currentBeta
       ? [
-        {
-          title: 'stable',
-          value: inc('patch')
-        }
-      ]
+          {
+            title: 'stable',
+            value: inc('patch'),
+          },
+        ]
       : [
-        {
-          title: 'beta-patch',
-          value: inc('prepatch')
-        },
-        {
-          title: 'beta-minor',
-          value: inc('preminor')
-        },
-        {
-          title: 'beta-major',
-          value: inc('premajor')
-        },
-        {
-          title: 'patch',
-          value: inc('patch')
-        },
-        {
-          title: 'minor',
-          value: inc('minor')
-        },
-        {
-          title: 'major',
-          value: inc('major')
-        }
-      ]),
-    { value: 'custom', title: 'custom' }
+          {
+            title: 'beta-patch',
+            value: inc('prepatch'),
+          },
+          {
+            title: 'beta-minor',
+            value: inc('preminor'),
+          },
+          {
+            title: 'beta-major',
+            value: inc('premajor'),
+          },
+          {
+            title: 'patch',
+            value: inc('patch'),
+          },
+          {
+            title: 'minor',
+            value: inc('minor'),
+          },
+          {
+            title: 'major',
+            value: inc('major'),
+          },
+        ]),
+    { value: 'custom', title: 'custom' },
   ].map((i) => {
     i.title = `${i.title} (${i.value})`
     return i
@@ -133,16 +124,13 @@ export function getVersionChoices (currentVersion: string) {
   return versionChoices
 }
 
-export function updateVersion (pkgPath: string, version: string): void {
+export function updateVersion(pkgPath: string, version: string): void {
   const pkg = JSON.parse(readFileSync(pkgPath, 'utf-8'))
   pkg.version = version
   writeFileSync(pkgPath, JSON.stringify(pkg, null, 2) + '\n')
 }
 
-export async function publishPackage (
-  pkdDir: string,
-  tag?: string
-): Promise<void> {
+export async function publishPackage(pkdDir: string, tag?: string): Promise<void> {
   const publicArgs = ['publish', '--access', 'public']
   if (tag) {
     publicArgs.push('--tag', tag)
@@ -150,47 +138,41 @@ export async function publishPackage (
   // await promises.writeFile(resolve(pkdDir, './.npmignore'), '**/*.map')
   cp(resolve(process.cwd(), './README.md'), resolve(pkdDir, './README.md'))
   await runIfNotDry('npm', publicArgs, {
-    cwd: pkdDir
+    cwd: pkdDir,
   })
 }
 
-export async function getLatestTag (pkgName: string, version: string) {
-  const tags = (await run('git', ['tag'], { stdio: 'pipe' })).stdout
-    .split(/\n/)
-    .filter(Boolean)
+export async function getLatestTag(pkgName: string, version: string) {
+  const tags = (await run('git', ['tag'], { stdio: 'pipe' })).stdout.split(/\n/).filter(Boolean)
   const isBeta = version.includes('beta')
-  const prefix = tags.filter(tag => tag.startsWith(`${pkgName}@`)).length > 0 ? `${pkgName}@` : 'v'
+  const prefix =
+    tags.filter((tag) => tag.startsWith(`${pkgName}@`)).length > 0 ? `${pkgName}@` : 'v'
   return tags
-    .filter((tag) => tag.startsWith(prefix) && (isBeta ? tag.includes('beta') : !tag.includes('beta')))
+    .filter(
+      (tag) => tag.startsWith(prefix) && (isBeta ? tag.includes('beta') : !tag.includes('beta'))
+    )
     .sort((v1, v2) => {
       return semver.compare(semver.coerce(v1)!.version, semver.coerce(v2)!.version)
     })
     .reverse()[0]
 }
 
-export async function logRecentCommits (pkgName: string, version: string) {
+export async function logRecentCommits(pkgName: string, version: string) {
   const tag = await getLatestTag(pkgName, version)
   if (!tag) return
   const sha = await run('git', ['rev-list', '-n', '1', tag], {
-    stdio: 'pipe'
+    stdio: 'pipe',
   }).then((res) => res.stdout.trim())
   console.log(
     colors.bold(
-      `\n${colors.blue('i')} Commits of ${colors.green(
-        pkgName
-      )} since ${colors.green(tag)} ${colors.gray(`(${sha.slice(0, 5)})`)}`
+      `\n${colors.blue('i')} Commits of ${colors.green(pkgName)} since ${colors.green(
+        tag
+      )} ${colors.gray(`(${sha.slice(0, 5)})`)}`
     )
   )
   await run(
     'git',
-    [
-      '--no-pager',
-      'log',
-      `${sha}..HEAD`,
-      '--oneline',
-      '--',
-      `packages/${pkgName}`
-    ],
+    ['--no-pager', 'log', `${sha}..HEAD`, '--oneline', '--', `packages/${pkgName}`],
     { stdio: 'inherit' }
   )
   console.log()

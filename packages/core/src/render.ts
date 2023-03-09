@@ -1,31 +1,43 @@
-import { Readable, Stream } from 'stream'
-import { loadConfig, StringToStream, mergeStream2, setHeader, judgeServerFramework, judgeFramework, getViteServerEntry } from 'ssr-common-utils'
-import { ISSRContext, UserConfig, IConfig, Vue3RenderRes } from 'ssr-types'
+import { type Readable, Stream } from 'stream'
+import {
+  loadConfig,
+  StringToStream,
+  mergeStream2,
+  setHeader,
+  judgeServerFramework,
+  judgeFramework,
+  getViteServerEntry,
+} from 'ssr-common-utils'
+import { type ISSRContext, type UserConfig, type IConfig, type Vue3RenderRes } from 'ssr-types'
 import type { ViteDevServer } from 'vite'
 
 const defaultConfig = loadConfig()
 const sf = judgeServerFramework()
 const f = judgeFramework()
 const viteServerEntry = getViteServerEntry()
-type RenderRes = string|Readable|Vue3RenderRes
+type RenderRes = string | Readable | Vue3RenderRes
 
-function render (ctx: ISSRContext, options?: UserConfig & { stream: true }): Promise<Readable>
-function render (ctx: ISSRContext, options?: UserConfig & { stream: false }): Promise<string>
-function render (ctx: ISSRContext, options?: UserConfig): Promise<string>
-function render<T> (ctx: ISSRContext, options?: UserConfig): Promise<T>
+function render(ctx: ISSRContext, options?: UserConfig & { stream: true }): Promise<Readable>
+function render(ctx: ISSRContext, options?: UserConfig & { stream: false }): Promise<string>
+function render(ctx: ISSRContext, options?: UserConfig): Promise<string>
+function render<T>(ctx: ISSRContext, options?: UserConfig): Promise<T>
 
-async function render (ctx: ISSRContext, options?: UserConfig) {
-  const extraConfig: UserConfig = options?.dynamicFile?.configFile ? require(options.dynamicFile.configFile).userConfig : {}
+async function render(ctx: ISSRContext, options?: UserConfig) {
+  const extraConfig: UserConfig = options?.dynamicFile?.configFile
+    ? require(options.dynamicFile.configFile).userConfig
+    : {}
   const config: IConfig = Object.assign({}, defaultConfig, extraConfig, options ?? {})
   const { isVite, isDev } = config
 
   if (!isDev && options?.dynamicFile?.assetManifest) {
-    config.isVite = !!(require(options.dynamicFile.assetManifest).vite)
+    config.isVite = !!require(options.dynamicFile.assetManifest).vite
   }
 
   setHeader(ctx, sf)
 
-  const serverRes: RenderRes = isVite ? await viteRender(ctx, config) : await commonRender(ctx, config)
+  const serverRes: RenderRes = isVite
+    ? await viteRender(ctx, config)
+    : await commonRender(ctx, config)
   if (serverRes instanceof Stream) {
     if (f !== 'ssr-plugin-react18') {
       const stream = mergeStream2(new StringToStream('<!DOCTYPE html>'), serverRes)
@@ -38,7 +50,7 @@ async function render (ctx: ISSRContext, options?: UserConfig) {
   } else {
     if (f === 'ssr-plugin-vue3') {
       let { html, teleportsContext } = serverRes as Vue3RenderRes
-      if (teleportsContext.teleports) {
+      if (teleportsContext.teleports != null) {
         const { teleports } = teleportsContext
         const cheerio = require('cheerio')
         const $ = cheerio.load(html)
@@ -57,7 +69,7 @@ async function render (ctx: ISSRContext, options?: UserConfig) {
 
 let viteServer: ViteDevServer | boolean = false
 
-async function viteRender (ctx: ISSRContext, config: IConfig) {
+async function viteRender(ctx: ISSRContext, config: IConfig) {
   const { isDev, dynamicFile } = config
   let serverRes
   if (isDev) {
@@ -74,7 +86,7 @@ async function viteRender (ctx: ISSRContext, config: IConfig) {
   return serverRes
 }
 
-async function commonRender (ctx: ISSRContext, config: IConfig) {
+async function commonRender(ctx: ISSRContext, config: IConfig) {
   const { isDev, dynamicFile } = config
   const serverBundle = dynamicFile.serverBundle
 

@@ -5,7 +5,7 @@ export const createWatcher = async () => {
   const pageDir = getPagesDir()
   const watcher = chokidar.watch(pageDir, {
     ignored: /.(less|css|scss)/, // ignore style files
-    persistent: true
+    persistent: true,
   })
   return watcher
 }
@@ -13,20 +13,20 @@ export const createWatcher = async () => {
 export const onWatcher = async (watcher: FSWatcher) => {
   const { parseFeRoutes, logGreen, logErr } = await import('ssr-common-utils')
   watcher
-    .on('add', async path => {
+    .on('add', async (path) => {
       logGreen(`File ${path} has been added ParseFeRoutes reload`)
-      await parseFeRoutes().catch(err => logErr('ParseFeRoutes Error' + err))
+      await parseFeRoutes().catch((err) => logErr('ParseFeRoutes Error' + String(err)))
     })
-    .on('addDir', async path => {
+    .on('addDir', async (path) => {
       logGreen(`Dir ${path} has been added ParseFeRoutes reload`)
-      await parseFeRoutes().catch(err => logErr('ParseFeRoutes Error' + err))
+      await parseFeRoutes().catch((err) => logErr('ParseFeRoutes Error' + String(err)))
     })
-    .on('unlink', async path => {
+    .on('unlink', async (path) => {
       logGreen(`File ${path} has been deleted ParseFeRoutes reload`)
-      await parseFeRoutes().catch(err => logErr('ParseFeRoutes Error' + err))
+      await parseFeRoutes().catch((err) => logErr('ParseFeRoutes Error' + String(err)))
     })
-    .on('unlinkDir', async path => {
+    .on('unlinkDir', async (path) => {
       logGreen(`Dir ${path} has been deleted ParseFeRoutes reload`)
-      await parseFeRoutes().catch(err => logErr('ParseFeRoutes Error' + err))
+      await parseFeRoutes().catch((err) => logErr('ParseFeRoutes Error' + String(err)))
     })
 }

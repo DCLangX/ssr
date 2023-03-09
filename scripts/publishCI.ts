@@ -1,6 +1,6 @@
 import { args, getPackageInfo, publishPackage, step } from './releaseUtils'
 
-async function main () {
+async function main() {
   const tag = args._[1]
   if (!tag) {
     throw new Error('No tag specified')

@@ -1,4 +1,4 @@
-import { Chain } from 'ssr-types'
+import { type Chain } from 'ssr-types'
 import { getImageOutputPath } from '../parse'
 import { loadModuleFromFramework } from '../cwd'
 
@@ -21,13 +21,11 @@ const addImageChain = (chain: Chain, isServer: boolean) => {
           publicPath,
           name: '[name].[hash:8].[ext]',
           esModule: false,
-          outputPath: imagePath
-        }
-      }
+          outputPath: imagePath,
+        },
+      },
     })
     .end()
 }
 
-export {
-  addImageChain
-}
+export { addImageChain }

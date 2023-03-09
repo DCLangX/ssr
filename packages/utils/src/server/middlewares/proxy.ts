@@ -22,7 +22,9 @@ const getDevProxyMiddlewaresArr = async () => {
     for (const path in proxy) {
       const options = proxy[path]
       // 如果底层服务端框架是基于 express的。则不需要用 koaConnect 转换为 koa 中间件
-      const middleware = isExpress ? createProxyMiddleware(path, options) : kc(createProxyMiddleware(path, options))
+      const middleware = isExpress
+        ? createProxyMiddleware(path, options)
+        : kc(createProxyMiddleware(path, options))
       proxyMiddlewaresArr.push(middleware)
     }
   }
@@ -48,13 +50,13 @@ const getDevProxyMiddlewaresArr = async () => {
         changeOrigin: true,
         secure: false,
         onProxyReq,
-        logLevel: 'warn'
+        logLevel: 'warn',
       }
 
       const proxyPathMap: Record<string, any> = {
         '/sockjs-node': remoteStaticServerOptions,
         '/__webpack_dev_server__': remoteStaticServerOptions,
-        '/*.wasm': remoteStaticServerOptions
+        '/*.wasm': remoteStaticServerOptions,
       }
       for (const key of proxyKey) {
         proxyPathMap[key] = remoteStaticServerOptions

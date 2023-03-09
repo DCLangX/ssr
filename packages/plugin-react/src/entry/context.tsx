@@ -1,9 +1,9 @@
 import { useReducer, createElement } from 'react'
-import { IProps, Action, IWindow, ReactRoutesType } from 'ssr-types'
+import type { IProps, Action, IWindow } from 'ssr-types'
 import { STORE_CONTEXT as Context } from '_build/create-context'
 import { Routes } from './create-router'
 
-const { reducer, state } = Routes as ReactRoutesType
+const { reducer, state } = Routes
 
 const userState = state ?? {}
 const userReducer = reducer ?? function () {}
@@ -13,7 +13,7 @@ const isDev = process.env.NODE_ENV !== 'production'
 // 客户端的 context  只需要创建一次，在页面整个生命周期内共享
 declare const window: IWindow
 
-function defaultReducer (state: any, action: Action) {
+function defaultReducer(state: any, action: Action) {
   switch (action.type) {
     case 'updateContext':
       if (isDev) {
@@ -26,15 +26,19 @@ function defaultReducer (state: any, action: Action) {
 
 const initialState = Object.assign({}, userState ?? {}, window.__INITIAL_DATA__)
 
-function combineReducer (state: any, action: any) {
+function combineReducer(state: any, action: any) {
   return defaultReducer(state, action) || userReducer(state, action)
 }
-export function AppContext (props: IProps) {
+export function AppContext(props: IProps) {
   const [state, dispatch] = useReducer(combineReducer, initialState)
-  return createElement(Context.Provider, {
-    value: {
-      state,
-      dispatch
-    }
-  }, props.children)
+  return createElement(
+    Context.Provider,
+    {
+      value: {
+        state,
+        dispatch,
+      },
+    },
+    props.children
+  )
 }

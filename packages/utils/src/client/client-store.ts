@@ -5,50 +5,50 @@ import type { IContext } from 'ssr-types'
 
 const storeCache = {
   val: {
-    store: {}
+    store: {},
   },
   set: function (store: any) {
     this.val.store = store
   },
   get: function () {
     return this.val.store
-  }
+  },
 }
 
 const piniaCache = {
   val: {
-    pinia: {} as Pinia
+    pinia: {} as Pinia,
   },
   set: function (pinia: Pinia) {
     this.val.pinia = pinia
   },
   get: function () {
     return this.val.pinia
-  }
+  },
 }
 
 const appCache = {
   val: {
-    app: {} as App
+    app: {} as App,
   },
   set: function (app: App) {
     this.val.app = app
   },
   get: function () {
     return this.val.app
-  }
+  },
 }
 
 const contextCache = {
   val: {
-    obj: {} as Context<IContext>
+    obj: {} as Context<IContext>,
   },
   set: function (app: Context<IContext>) {
     this.val.obj = app
   },
   get: function () {
     return this.val.obj
-  }
+  },
 }
 
 export const setStore = (store: any) => {

@@ -1,7 +1,15 @@
 import { join } from 'path'
-import { IConfig, UserConfig } from 'ssr-types'
-import { getCwd, getUserConfig, getFeDir, judgeFramework, loadModuleFromFramework, stringifyDefine, accessFileSync } from './cwd'
-import { coerce, SemVer } from 'semver'
+import { type IConfig, type UserConfig } from 'ssr-types'
+import {
+  getCwd,
+  getUserConfig,
+  getFeDir,
+  judgeFramework,
+  loadModuleFromFramework,
+  stringifyDefine,
+  accessFileSync,
+} from './cwd'
+import { coerce, type SemVer } from 'semver'
 import { normalizeStartPath, normalizeEndPath } from '../common'
 
 const loadConfig = (): IConfig => {
@@ -19,33 +27,52 @@ const loadConfig = (): IConfig => {
   const vueClientEntry = join(cwd, './node_modules/ssr-plugin-vue/esm/entry/client-entry.js')
   const reactServerEntry = join(cwd, './node_modules/ssr-plugin-react/esm/entry/server-entry.js')
   const reactClientEntry = join(cwd, './node_modules/ssr-plugin-react/esm/entry/client-entry.js')
-  const react18ServerEntry = join(cwd, './node_modules/ssr-plugin-react18/esm/entry/server-entry.js')
-  const react18ClientEntry = join(cwd, './node_modules/ssr-plugin-react18/esm/entry/client-entry.js')
+  const react18ServerEntry = join(
+    cwd,
+    './node_modules/ssr-plugin-react18/esm/entry/server-entry.js'
+  )
+  const react18ClientEntry = join(
+    cwd,
+    './node_modules/ssr-plugin-react18/esm/entry/client-entry.js'
+  )
 
   const supportOptinalChaining = coerce(process.version)!.major >= 14
   const define = userConfig.define ?? {}
-  userConfig.define && stringifyDefine(define)
+  userConfig.define != null && stringifyDefine(define)
 
-  const alias = Object.assign({
-    '@': getFeDir(),
-    '~': getCwd(),
-    '~/src': join(cwd, './src'),
-    _build: join(cwd, './build')
-  }, framework === 'ssr-plugin-react' ? {
-    // react: loadModuleFromFramework('react'),
-    'react-dom': loadModuleFromFramework('react-dom'),
-    'react-router': loadModuleFromFramework('react-router'),
-    'react-router-dom': loadModuleFromFramework('react-router-dom'),
-    'react/jsx-runtime': loadModuleFromFramework('react/jsx-runtime'),
-    'react/jsx-dev-runtime': loadModuleFromFramework('react/jsx-dev-runtime')
-  } : {
-    vue$: framework === 'ssr-plugin-vue' ? 'vue/dist/vue.runtime.esm.js' : 'vue/dist/vue.runtime.esm-bundler.js',
-    '@vue/server-renderer': loadModuleFromFramework('@vue/server-renderer/index.js') // use commonjs file
-  }, userConfig.alias)
+  const alias = Object.assign(
+    {
+      '@': getFeDir(),
+      '~': getCwd(),
+      '~/src': join(cwd, './src'),
+      _build: join(cwd, './build'),
+    },
+    framework === 'ssr-plugin-react'
+      ? {
+          // react: loadModuleFromFramework('react'),
+          'react-dom': loadModuleFromFramework('react-dom'),
+          'react-router': loadModuleFromFramework('react-router'),
+          'react-router-dom': loadModuleFromFramework('react-router-dom'),
+          'react/jsx-runtime': loadModuleFromFramework('react/jsx-runtime'),
+          'react/jsx-dev-runtime': loadModuleFromFramework('react/jsx-dev-runtime'),
+        }
+      : {
+          vue$:
+            framework === 'ssr-plugin-vue'
+              ? 'vue/dist/vue.runtime.esm.js'
+              : 'vue/dist/vue.runtime.esm-bundler.js',
+          '@vue/server-renderer': loadModuleFromFramework('@vue/server-renderer/index.js'), // use commonjs file
+        },
+    userConfig.alias
+  )
   type ClientLogLevel = 'error'
-  const publicPath = userConfig.publicPath?.startsWith('http') ? userConfig.publicPath : normalizeStartPath(userConfig.publicPath ?? '/')
+  const publicPath = userConfig.publicPath?.startsWith('http')
+    ? userConfig.publicPath
+    : normalizeStartPath(userConfig.publicPath ?? '/')
 
-  const devPublicPath = publicPath.startsWith('http') ? publicPath.replace(/^http(s)?:\/\/(.*)?\d/, '') : publicPath // 本地开发不使用 http://localhost:3000 这样的 path 赋值给 webpack-dev-server 会很难处理
+  const devPublicPath = publicPath.startsWith('http')
+    ? publicPath.replace(/^http(s)?:\/\/(.*)?\d/, '')
+    : publicPath // 本地开发不使用 http://localhost:3000 这样的 path 赋值给 webpack-dev-server 会很难处理
 
   const moduleFileExtensions = [
     '.web.mjs',
@@ -60,19 +87,27 @@ const loadConfig = (): IConfig => {
     '.web.jsx',
     '.jsx',
     '.vue',
-    '.css'
+    '.css',
   ]
   const isDev = userConfig.isDev ?? process.env.NODE_ENV !== 'production'
   const fePort = userConfig.fePort ?? 8999
 
-  const hmr = Object.assign({
-    // host: '127.0.0.1',
-    protocol: 'ws'
-  }, userConfig.hmr)
+  const hmr = Object.assign(
+    {
+      // host: '127.0.0.1',
+      protocol: 'ws',
+    },
+    userConfig.hmr
+  )
 
   let https = userConfig.https ? userConfig.https : !!process.env.HTTPS
 
-  if (!((typeof https === 'boolean' && https) || (typeof https === 'object' && Object.keys(https).length !== 0))) {
+  if (
+    !(
+      (typeof https === 'boolean' && https) ||
+      (typeof https === 'object' && Object.keys(https).length !== 0)
+    )
+  ) {
     https = false
   }
 
@@ -84,10 +119,25 @@ const loadConfig = (): IConfig => {
 
   const clientLogLevel: ClientLogLevel = 'error'
   const useHash = !isDev // 生产环境默认生成hash
-  const defaultWhiteList: Array<RegExp|string> = [/\.(css|less|sass|scss)$/, /vant.*?style/, /antd.*?(style)/, /ant-design-vue.*?(style)/, /store$/, /\.(vue)$/]
-  const whiteList: Array<RegExp|string> = defaultWhiteList.concat(userConfig.whiteList ?? [])
+  const defaultWhiteList: Array<RegExp | string> = [
+    /\.(css|less|sass|scss)$/,
+    /vant.*?style/,
+    /antd.*?(style)/,
+    /ant-design-vue.*?(style)/,
+    /store$/,
+    /\.(vue)$/,
+  ]
+  const whiteList: Array<RegExp | string> = defaultWhiteList.concat(userConfig.whiteList ?? [])
 
-  const jsOrder = isVite ? [`${chunkName}.js`] : [`runtime~${chunkName}.js`, 'vendor.js', 'common-vendor.js', `${chunkName}.js`, 'layout-app.js']
+  const jsOrder = isVite
+    ? [`${chunkName}.js`]
+    : [
+        `runtime~${chunkName}.js`,
+        'vendor.js',
+        'common-vendor.js',
+        `${chunkName}.js`,
+        'layout-app.js',
+      ]
 
   const cssOrder = ['vendor.css', 'common-vendor.css', `${chunkName}.css`, 'layout-app.css']
 
@@ -99,50 +149,57 @@ const loadConfig = (): IConfig => {
     colors: true, // 以不同颜色区分构建信息
     modules: false, // 添加构建模块信息
     warnings: false,
-    entrypoints: false
+    entrypoints: false,
   }
   const dynamic = true
   // ref https://www.babeljs.cn/docs/babel-preset-env#corejs
-  const corejsVersion = loadModuleFromFramework('core-js/package.json') ? coerce(require(loadModuleFromFramework('core-js/package.json')).version) : {}
+  const corejsVersion = loadModuleFromFramework('core-js/package.json')
+    ? coerce(require(loadModuleFromFramework('core-js/package.json')).version)
+    : {}
   const { major, minor } = corejsVersion as SemVer
 
-  const corejsOptions = userConfig.corejs ? {
-    corejs: {
-      version: `${major}.${minor}`,
-      proposals: major === 3
-    },
-    targets: {
-      chrome: '60',
-      firefox: '60',
-      ie: '9',
-      safari: '10',
-      edge: '17'
-    },
-    useBuiltIns: 'usage',
-    shippedProposals: major === 2,
-    ...userConfig.corejsOptions
-  } : {}
+  const corejsOptions = userConfig.corejs
+    ? {
+        corejs: {
+          version: `${major}.${minor}`,
+          proposals: major === 3,
+        },
+        targets: {
+          chrome: '60',
+          firefox: '60',
+          ie: '9',
+          safari: '10',
+          edge: '17',
+        },
+        useBuiltIns: 'usage',
+        shippedProposals: major === 2,
+        ...userConfig.corejsOptions,
+      }
+    : {}
 
   const writeDebounceTime = 2000
-  const webpackDevServerConfig = Object.assign({
-    stats: webpackStatsOption,
-    disableInfo: true, // 关闭webpack-dev-server 自带的server Info信息
-    disableHostCheck: true,
-    publicPath: devPublicPath,
-    hotOnly: true,
-    host,
-    sockHost: host,
-    sockPort: hmr?.port ?? fePort,
-    hot: true,
-    port: hmr?.port ?? fePort,
-    https,
-    clientLogLevel: clientLogLevel,
-    headers: {
-      'Access-Control-Allow-Origin': '*',
-      'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, PATCH, OPTIONS',
-      'Access-Control-Allow-Headers': 'X-Requested-With, content-type, Authorization'
-    }
-  }, userConfig.webpackDevServerConfig)
+  const webpackDevServerConfig = Object.assign(
+    {
+      stats: webpackStatsOption,
+      disableInfo: true, // 关闭webpack-dev-server 自带的server Info信息
+      disableHostCheck: true,
+      publicPath: devPublicPath,
+      hotOnly: true,
+      host,
+      sockHost: host,
+      sockPort: hmr?.port ?? fePort,
+      hot: true,
+      port: hmr?.port ?? fePort,
+      https,
+      clientLogLevel,
+      headers: {
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, PATCH, OPTIONS',
+        'Access-Control-Allow-Headers': 'X-Requested-With, content-type, Authorization',
+      },
+    },
+    userConfig.webpackDevServerConfig
+  )
 
   const chainBaseConfig = () => {
     // 覆盖默认webpack配置
@@ -162,59 +219,71 @@ const loadConfig = (): IConfig => {
   const dynamicFile = {
     serverBundle: join(cwd, `./build/server/${chunkName}.server.js`),
     assetManifest: join(cwd, './build/client/asset-manifest.json'),
-    asyncChunkMap: join(cwd, './build/asyncChunkMap.json')
+    asyncChunkMap: join(cwd, './build/asyncChunkMap.json'),
   }
   const babelExtraModule: UserConfig['babelExtraModule'] = [
-    /ssr-plugin-vue3/, /ssr-client-utils/, /ssr-hoc-vue/, /vue/, /ssr-common-utils/, /ssr-plugin-vue/, /ssr-plugin-react/,
-    /ssr-hoc-react/, /ssr-hoc-vue3/, /ssr-hoc-react18/
+    /ssr-plugin-vue3/,
+    /ssr-client-utils/,
+    /ssr-hoc-vue/,
+    /vue/,
+    /ssr-common-utils/,
+    /ssr-plugin-vue/,
+    /ssr-plugin-react/,
+    /ssr-hoc-react/,
+    /ssr-hoc-vue3/,
+    /ssr-hoc-react18/,
   ]
   const getOutput = () => {}
-  const config = Object.assign({}, {
-    chainBaseConfig,
-    chainServerConfig,
-    chainClientConfig,
-    cwd,
-    isDev,
-    getOutput,
-    publicPath,
-    useHash,
-    host,
-    moduleFileExtensions,
-    fePort,
-    serverPort,
-    chunkName,
-    jsOrder,
-    cssOrder,
-    webpackStatsOption,
-    dynamic,
-    mode,
-    stream,
-    https,
-    manifestPath,
-    proxyKey,
-    vue3ServerEntry,
-    vue3ClientEntry,
-    vueServerEntry,
-    vueClientEntry,
-    reactServerEntry,
-    reactClientEntry,
-    react18ServerEntry,
-    react18ClientEntry,
-    isVite,
-    whiteList,
-    isCI,
-    supportOptinalChaining,
-    define,
-    prefix,
-    optimize,
-    writeDebounceTime,
-    dynamicFile,
-    babelExtraModule
-  }, userConfig)
+  const config = Object.assign(
+    {},
+    {
+      chainBaseConfig,
+      chainServerConfig,
+      chainClientConfig,
+      cwd,
+      isDev,
+      getOutput,
+      publicPath,
+      useHash,
+      host,
+      moduleFileExtensions,
+      fePort,
+      serverPort,
+      chunkName,
+      jsOrder,
+      cssOrder,
+      webpackStatsOption,
+      dynamic,
+      mode,
+      stream,
+      https,
+      manifestPath,
+      proxyKey,
+      vue3ServerEntry,
+      vue3ClientEntry,
+      vueServerEntry,
+      vueClientEntry,
+      reactServerEntry,
+      reactClientEntry,
+      react18ServerEntry,
+      react18ClientEntry,
+      isVite,
+      whiteList,
+      isCI,
+      supportOptinalChaining,
+      define,
+      prefix,
+      optimize,
+      writeDebounceTime,
+      dynamicFile,
+      babelExtraModule,
+    },
+    userConfig
+  )
 
   config.getOutput = () => ({
     clientOutPut: join(cwd, './build/client'),
-    serverOutPut: join(cwd, './build/server')
+    serverOutPut: join(cwd, './build/server'),
   })
   config.assetsDir = assetsDir
   config.alias = alias
@@ -223,18 +292,19 @@ const loadConfig = (): IConfig => {
   config.whiteList = whiteList
   config.hmr = hmr
   config.webpackDevServerConfig = webpackDevServerConfig // 防止把整个 webpackDevServerConfig 全量覆盖了
-  config.babelOptions = userConfig.babelOptions ? {
-    ...{
-      babelHelpers: 'bundled' as 'bundled',
-      exclude: /node_modules|\.(css|less|sass)/,
-      extensions: ['.ts', '.vue', '.tsx', '.js']
-    },
-    ...userConfig.babelOptions
-  } : undefined
+  config.babelOptions =
+    userConfig.babelOptions != null
+      ? {
+          ...{
+            babelHelpers: 'bundled' as 'bundled',
+            exclude: /node_modules|\.(css|less|sass)/,
+            extensions: ['.ts', '.vue', '.tsx', '.js'],
+          },
+          ...userConfig.babelOptions,
+        }
+      : undefined
 
   return config
 }
 
-export {
-  loadConfig
-}
+export { loadConfig }

@@ -22,17 +22,32 @@ const cwd = getCwd()
 const dependenciesMap: Record<string, string[]> = {}
 const asyncChunkMapJSON: Record<string, string[]> = {}
 const generateMap: Record<string, string> = {}
-const vendorList = ['vue', 'vuex', 'vue-router', 'react', 'react-router',
-  'react-router-dom', 'react-dom', '@vue', 'ssr-hoc-react', 'ssr-hoc-react18',
-  'ssr-client-utils', 'ssr-common-utils', 'pinia', '@babel/runtime',
-  'ssr-plugin-vue3', 'ssr-plugin-vue', 'ssr-plugin-react', 'react/jsx-runtime',
-  'path-to-regexp'
+const vendorList = [
+  'vue',
+  'vuex',
+  'vue-router',
+  'react',
+  'react-router',
+  'react-router-dom',
+  'react-dom',
+  '@vue',
+  'ssr-hoc-react',
+  'ssr-hoc-react18',
+  'ssr-client-utils',
+  'ssr-common-utils',
+  'pinia',
+  '@babel/runtime',
+  'ssr-plugin-vue3',
+  'ssr-plugin-vue',
+  'ssr-plugin-react',
+  'react/jsx-runtime',
+  'path-to-regexp',
 ]
 
 const chunkNamePlugin = function (): Plugin {
   return {
     name: 'chunkNamePlugin',
-    transform (source, id) {
+    transform(source, id) {
       if (id.includes('ssr-declare-routes') || id.includes('ssr-manual-routes')) {
         let str = new MagicString(source)
         const imports = parseImports(source)[0]
@@ -42,7 +57,11 @@ const chunkNamePlugin = function (): Plugin {
           if (!rawUrl.includes('render')) {
             if (rawUrl.includes('fetch')) {
               str = str.appendRight(statementEnd - 1, '?chunkName=void')
-            } else if (rawUrl.includes('layout') || rawUrl.includes('App') || rawUrl.includes('store')) {
+            } else if (
+              rawUrl.includes('layout') ||
+              rawUrl.includes('App') ||
+              rawUrl.includes('store')
+            ) {
               str = str.appendRight(statementEnd - 1, '?chunkName=layout-app')
             } else {
               str = str.appendRight(statementEnd - 1, '?chunkName=void')
@@ -53,16 +72,21 @@ const chunkNamePlugin = function (): Plugin {
           str = str.appendRight(statementEnd - 1, `?chunkName=${chunkName}`)
         }
         return {
-          code: str.toString()
+          code: str.toString(),
         }
       }
-    }
+    },
   }
 }
 
 const filePathMap: Record<string, string> = {}
 
-const recordInfo = (id: string, chunkName: string | null, defaultChunkName: string | null, parentId: string) => {
+const recordInfo = (
+  id: string,
+  chunkName: string | null,
+  defaultChunkName: string | null,
+  parentId: string
+) => {
   const sign = id.includes('node_modules') ? getPkgName(id) : id
   if (id.includes('node_modules')) {
     filePathMap[sign] = parentId
@@ -86,7 +110,9 @@ const fn = () => {
   const { writeDebounceTime } = loadConfig()
   return debounce(() => {
     if (hasWritten) {
-      throw new Error(`generateMap has been written over twice, please check your machine performance, or add config.writeDebounceTime that default is ${writeDebounceTime}ms`)
+      throw new Error(
+        `generateMap has been written over twice, please check your machine performance, or add config.writeDebounceTime that default is ${writeDebounceTime}ms`
+      )
     }
     hasWritten = true
     writeEmitter.emit('buildEnd')
@@ -118,7 +144,7 @@ const findChildren = (id: string, getModuleInfo: PluginContext['getModuleInfo'])
 const asyncOptimizeChunkPlugin = (): Plugin => {
   return {
     name: 'asyncOptimizeChunkPlugin',
-    moduleParsed (this, info) {
+    moduleParsed(this, info) {
       const { id } = info
       if (id.includes('chunkName')) {
         const { importedIds, dynamicallyImportedIds } = info
@@ -131,44 +157,51 @@ const asyncOptimizeChunkPlugin = (): Plugin => {
         }
       }
     },
-    buildStart () {
+    buildStart() {
       checkBuildEnd = fn()
     },
-    transform (this, code, id) {
+    transform(this, code, id) {
       moduleIds.push(id)
       checkBuildEnd()
     },
-    async buildEnd (this, err) {
+    async buildEnd(this, err) {
       // after the first layer file can be located in which chunkName
       // confirm all children dependence belong to which chunkName
-      Object.keys(dependenciesMap).forEach(item => {
+      Object.keys(dependenciesMap).forEach((item) => {
         const id = !isAbsolute(item) ? filePathMap[item] : item
         findChildren(id, this.getModuleInfo)
       })
-      Object.keys(dependenciesMap).forEach(item => {
+      Object.keys(dependenciesMap).forEach((item) => {
         if (!isAbsolute(item)) {
           const abPath = filePathMap[item]
           if (abPath) {
             try {
               const allDependencies = {}
               // find absolute dependencies path from business file
-              getDependencies(require.resolve(item, {
-                paths: [abPath]
-              }), allDependencies)
-              Object.keys(allDependencies).forEach(d => {
+              getDependencies(
+                require.resolve(item, {
+                  paths: [abPath],
+                }),
+                allDependencies
+              )
+              Object.keys(allDependencies).forEach((d) => {
                 dependenciesMap[d] = (dependenciesMap[d] ?? []).concat(dependenciesMap[item])
               })
             } catch (error) {
-              logErr(`Please check ${getPkgName(abPath)}/package.json ${abPath} use ${item} but don't specify it in dependencies`)
+              logErr(
+                `Please check ${getPkgName(
+                  abPath
+                )}/package.json ${abPath} use ${item} but don't specify it in dependencies`
+              )
             }
           }
         }
       })
-      Object.keys(dependenciesMap).forEach(item => {
+      Object.keys(dependenciesMap).forEach((item) => {
         dependenciesMap[item] = Array.from(new Set(dependenciesMap[item].filter(Boolean)))
       })
       return await new Promise((resolve) => {
-        if (err) {
+        if (err != null) {
           writeEmitter.on('buildEnd', () => {
             for (const id of moduleIds) {
               setGenerateMap(id)
@@ -183,7 +216,7 @@ const asyncOptimizeChunkPlugin = (): Plugin => {
           writeGenerateMap().then(() => resolve())
         }
       })
-    }
+    },
   }
 }
 
@@ -192,7 +225,7 @@ const manifestPlugin = (): Plugin => {
   const { clientOutPut } = getOutput()
   return {
     name: 'manifestPlugin',
-    async generateBundle (_, bundles) {
+    async generateBundle(_, bundles) {
       if (optimize) return
       const manifest: Record<string, string> = {}
       for (const bundle in bundles) {
@@ -201,19 +234,31 @@ const manifestPlugin = (): Plugin => {
         arr.splice(1, 2)
         manifest[arr.join('.')] = `${getOutputPublicPath()}${val}`
       }
-      if (!await accessFile(resolve(clientOutPut))) {
+      if (!(await accessFile(resolve(clientOutPut)))) {
         mkdir('-p', resolve(clientOutPut))
       }
-      manifest['vite'] = '1'
-      await promises.writeFile(resolve(clientOutPut, './asset-manifest.json'), JSON.stringify(manifest, null, 2))
-    }
+      manifest.vite = '1'
+      await promises.writeFile(
+        resolve(clientOutPut, './asset-manifest.json'),
+        JSON.stringify(manifest, null, 2)
+      )
+    },
   }
 }
 
 const writeGenerateMap = async () => {
-  await promises.writeFile(resolve(getCwd(), './build/asyncChunkMap.json'), JSON.stringify(asyncChunkMapJSON, null, 2))
-  await promises.writeFile(resolve(getCwd(), './build/generateMap.json'), JSON.stringify(generateMap, null, 2))
-  await promises.writeFile(resolve(getCwd(), './build/dependenciesMap.json'), JSON.stringify(dependenciesMap, null, 2))
+  await promises.writeFile(
+    resolve(getCwd(), './build/asyncChunkMap.json'),
+    JSON.stringify(asyncChunkMapJSON, null, 2)
+  )
+  await promises.writeFile(
+    resolve(getCwd(), './build/generateMap.json'),
+    JSON.stringify(generateMap, null, 2)
+  )
+  await promises.writeFile(
+    resolve(getCwd(), './build/dependenciesMap.json'),
+    JSON.stringify(dependenciesMap, null, 2)
+  )
 }
 
 const setGenerateMap = (id: string) => {
@@ -239,7 +284,7 @@ const rollupOutputOptions: () => OutputOptions = () => {
     },
     manualChunks: (id: string) => {
       return generateMap[id] === 'void' ? undefined : generateMap[id]
-    }
+    },
   }
 }
 
@@ -258,7 +303,10 @@ const manualChunksFn = (id: string) => {
     if (arr.length === 1) {
       return arr[0]
     } else if (arr.length >= 2) {
-      const commonChunkName = cryptoAsyncChunkName(arr.map(item => ({ name: item })), asyncChunkMapJSON)
+      const commonChunkName = cryptoAsyncChunkName(
+        arr.map((item) => ({ name: item })),
+        asyncChunkMapJSON
+      )
       return commonChunkName === 'vendor~client-entry' ? 'common-vendor' : commonChunkName
     }
   }
@@ -274,27 +322,27 @@ const commonConfig = (): UserConfig => {
     server: {
       middlewareMode: 'ssr' as SSR,
       hmr,
-      ...viteConfig?.().common?.server
+      ...viteConfig?.().common?.server,
     },
     css: {
       postcss: css?.().loaderOptions?.postcss ?? {},
       preprocessorOptions: {
         less: {
           javascriptEnabled: true,
-          ...css?.().loaderOptions?.less
+          ...css?.().loaderOptions?.less,
         },
-        scss: css?.().loaderOptions?.scss ?? {}
-      }
+        scss: css?.().loaderOptions?.scss ?? {},
+      },
     },
     // @ts-expect-error
     ssr: {
       external: defaultExternal.concat(viteConfig?.()?.server?.externals ?? []),
-      noExternal: whiteList
+      noExternal: whiteList,
     },
     resolve: {
-      alias: alias,
-      extensions: ['.mjs', '.ts', '.jsx', '.tsx', '.json', '.vue', '.js']
-    }
+      alias,
+      extensions: ['.mjs', '.ts', '.jsx', '.tsx', '.json', '.vue', '.js'],
+    },
   }
 }
 export {
@@ -303,5 +351,5 @@ export {
   rollupOutputOptions,
   commonConfig,
   asyncOptimizeChunkPlugin,
-  writeEmitter
+  writeEmitter,
 }

@@ -16,5 +16,5 @@ if (args.a || args.all) {
 }
 
 execa('pnpm', ['--filter', path, 'watch', '--parallel'], {
-  stdio: 'inherit'
+  stdio: 'inherit',
 })

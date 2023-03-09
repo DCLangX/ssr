@@ -1,5 +1,11 @@
 import type { build as BuildType, UserConfig } from 'vite'
-import { loadConfig, chunkNamePlugin, rollupOutputOptions, manifestPlugin, commonConfig } from 'ssr-common-utils'
+import {
+  loadConfig,
+  chunkNamePlugin,
+  rollupOutputOptions,
+  manifestPlugin,
+  commonConfig,
+} from 'ssr-common-utils'
 import { createVuePlugin } from 'vite-plugin-vue2'
 const build: typeof BuildType = require('vite').build
 const { getOutput, vueServerEntry, vueClientEntry, define } = loadConfig()
@@ -7,45 +13,41 @@ const { clientOutPut, serverOutPut } = getOutput()
 
 const serverConfig: UserConfig = {
   ...commonConfig(),
-  plugins: [
-    createVuePlugin()
-  ],
+  plugins: [createVuePlugin()],
   build: {
     ssr: vueServerEntry,
     outDir: serverOutPut,
     rollupOptions: {
       output: {
         entryFileNames: 'Page.server.js',
-        assetFileNames: rollupOutputOptions().assetFileNames
-      }
-    }
+        assetFileNames: rollupOutputOptions().assetFileNames,
+      },
+    },
   },
   define: {
     __isBrowser__: false,
     ...define?.server,
-    ...define?.base
-  }
+    ...define?.base,
+  },
 }
 
 const clientConfig: UserConfig = {
   ...commonConfig(),
-  plugins: [
-    createVuePlugin()
-  ],
+  plugins: [createVuePlugin()],
   build: {
     ssrManifest: true,
     outDir: clientOutPut,
     rollupOptions: {
       input: vueClientEntry,
       output: rollupOutputOptions(),
-      plugins: [chunkNamePlugin(), manifestPlugin()]
-    }
+      plugins: [chunkNamePlugin(), manifestPlugin()],
+    },
   },
   define: {
     __isBrowser__: true,
     ...define?.client,
-    ...define?.base
-  }
+    ...define?.base,
+  },
 }
 const viteStart = async () => {
   //
@@ -55,9 +57,4 @@ const viteBuild = async () => {
   await build({ ...serverConfig, mode: 'production' })
 }
 
-export {
-  viteBuild,
-  viteStart,
-  serverConfig,
-  clientConfig
-}
+export { viteBuild, viteStart, serverConfig, clientConfig }

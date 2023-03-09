@@ -11,10 +11,4 @@ const logRed = (text: string) => {
 const logErr = logRed
 const logInfo = logGreen
 
-export {
-  logGreen,
-  logRed,
-  logErr,
-  logInfo,
-  logWarning
-}
+export { logGreen, logRed, logErr, logInfo, logWarning }

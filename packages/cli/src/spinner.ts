@@ -1,4 +1,4 @@
-const spinner = require('ora')('Starting')
+const startSpinner = require('ora')('Starting')
 
 interface Message {
   message: 'start' | 'stop'
@@ -7,9 +7,9 @@ interface Message {
 process.on('message', (data: Message) => {
   const { message } = data
   if (message === 'start') {
-    spinner.start()
+    startSpinner.start()
   } else {
-    spinner.stop()
+    startSpinner.stop()
     process.exit()
   }
 })

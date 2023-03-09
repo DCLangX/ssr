@@ -1,15 +1,37 @@
-import { build, UserConfig } from 'vite'
+import { build, type UserConfig } from 'vite'
 import {
-  loadConfig, chunkNamePlugin, rollupOutputOptions, manifestPlugin,
-  commonConfig, asyncOptimizeChunkPlugin, getOutputPublicPath, getBabelOptions
+  loadConfig,
+  chunkNamePlugin,
+  rollupOutputOptions,
+  manifestPlugin,
+  commonConfig,
+  asyncOptimizeChunkPlugin,
+  getOutputPublicPath,
+  getBabelOptions,
 } from 'ssr-common-utils'
 import vuePlugin from '@vitejs/plugin-vue'
 import vueJSXPlugin from '@vitejs/plugin-vue-jsx'
 import babel from '@rollup/plugin-babel'
 
-import { createStyleImportPlugin, AndDesignVueResolve, VantResolve, ElementPlusResolve, NutuiResolve, AntdResolve } from 'ssr-vite-plugin-style-import'
+import {
+  createStyleImportPlugin,
+  AndDesignVueResolve,
+  VantResolve,
+  ElementPlusResolve,
+  NutuiResolve,
+  AntdResolve,
+} from 'ssr-vite-plugin-style-import'
 
-const { getOutput, vue3ServerEntry, vue3ClientEntry, viteConfig, supportOptinalChaining, isDev, define, optimize } = loadConfig()
+const {
+  getOutput,
+  vue3ServerEntry,
+  vue3ClientEntry,
+  viteConfig,
+  supportOptinalChaining,
+  isDev,
+  define,
+  optimize,
+} = loadConfig()
 const { clientOutPut, serverOutPut } = getOutput()
 
 const styleImportConfig = {
@@ -19,8 +41,8 @@ const styleImportConfig = {
     VantResolve(),
     ElementPlusResolve(),
     NutuiResolve(),
-    AntdResolve()
-  ]
+    AntdResolve(),
+  ],
 }
 
 const serverConfig: UserConfig = {
@@ -32,21 +54,22 @@ const serverConfig: UserConfig = {
     viteConfig?.()?.common?.extraPlugin,
     viteConfig?.()?.server?.extraPlugin,
     createStyleImportPlugin(styleImportConfig),
-    !supportOptinalChaining && babel({
-      babelHelpers: 'bundled',
-      plugins: [
-        '@babel/plugin-proposal-optional-chaining',
-        '@babel/plugin-proposal-nullish-coalescing-operator'
-      ],
-      exclude: /node_modules|\.(css|less|sass)/,
-      extensions: ['.vue', '.ts', '.tsx', '.js']
-    })
+    !supportOptinalChaining &&
+      babel({
+        babelHelpers: 'bundled',
+        plugins: [
+          '@babel/plugin-proposal-optional-chaining',
+          '@babel/plugin-proposal-nullish-coalescing-operator',
+        ],
+        exclude: /node_modules|\.(css|less|sass)/,
+        extensions: ['.vue', '.ts', '.tsx', '.js'],
+      }),
   ],
   optimizeDeps: {
     esbuildOptions: {
       // @ts-expect-error
-      bundle: isDev
-    }
+      bundle: isDev,
+    },
   },
   build: {
     ...viteConfig?.().server?.otherConfig?.build,
@@ -57,16 +80,16 @@ const serverConfig: UserConfig = {
       input: isDev ? vue3ClientEntry : vue3ServerEntry, // setting prebundle list by client-entry in dev
       output: {
         entryFileNames: 'Page.server.js',
-        assetFileNames: rollupOutputOptions().assetFileNames
-      }
-    }
+        assetFileNames: rollupOutputOptions().assetFileNames,
+      },
+    },
   },
   define: {
     ...viteConfig?.().server?.otherConfig?.define,
     __isBrowser__: false,
     ...define?.base,
-    ...define?.server
-  }
+    ...define?.server,
+  },
 }
 
 const clientConfig: UserConfig = {
@@ -78,7 +101,7 @@ const clientConfig: UserConfig = {
     vueJSXPlugin(),
     viteConfig?.()?.common?.extraPlugin,
     viteConfig?.()?.client?.extraPlugin,
-    createStyleImportPlugin(styleImportConfig)
+    createStyleImportPlugin(styleImportConfig),
   ],
   build: {
     ...viteConfig?.().client?.otherConfig?.build,
@@ -89,18 +112,22 @@ const clientConfig: UserConfig = {
       ...viteConfig?.().client?.otherConfig?.build?.rollupOptions,
       input: vue3ClientEntry,
       output: rollupOutputOptions(),
-      plugins: [chunkNamePlugin(), asyncOptimizeChunkPlugin(), manifestPlugin(),
+      plugins: [
+        chunkNamePlugin(),
+        asyncOptimizeChunkPlugin(),
+        manifestPlugin(),
         ...getBabelOptions({
-          babel
-        })]
-    }
+          babel,
+        }),
+      ],
+    },
   },
   define: {
     ...viteConfig?.().client?.otherConfig?.define,
     __isBrowser__: true,
     ...define?.base,
-    ...define?.client
-  }
+    ...define?.client,
+  },
 }
 const viteStart = async () => {
   //
@@ -111,17 +138,10 @@ const viteBuild = async () => {
 }
 
 const viteBuildClient = async () => {
-  await build({ ...clientConfig, mode: 'production' }).catch(_ => {})
+  await build({ ...clientConfig, mode: 'production' }).catch((_) => {})
 }
 const viteBuildServer = async () => {
   await build({ ...serverConfig, mode: 'production' })
 }
 
-export {
-  viteBuild,
-  viteStart,
-  viteBuildClient,
-  viteBuildServer,
-  serverConfig,
-  clientConfig
-}
+export { viteBuild, viteStart, viteBuildClient, viteBuildServer, serverConfig, clientConfig }
