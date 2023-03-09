@@ -46,7 +46,9 @@
   "devDependencies": {
     "@types/shelljs": "^0.8.7",
     "@types/yargs": "^13.0.0",
-    "concurrently": "^5.1.0"
+    "concurrently": "^5.1.0",
+    "ssr-plugin-nestjs": "workspace:^6.2.20",
+    "ssr-plugin-vue3": "workspace:^6.2.74"
   },
   "peerDependencies": {
     "ssr-plugin-midway": "workspace:^6.0.0",

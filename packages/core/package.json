@@ -27,14 +27,20 @@
     "url": "https://github.com/zhangyuang/ssr/issues"
   },
   "homepage": "https://github.com/zhangyuang/ssr#readme",
+  "devDependencies": {
+    "ssr-plugin-vue3": "workspace:^6.0.0"
+  },
   "dependencies": {
     "@babel/runtime": "^7.12.13",
     "cheerio": "^1.0.0-rc.10",
-    "ssr-serialize-javascript": "^6.0.0",
+    "ssr-common-utils": "^6.2.10",
     "ssr-deepclone": "^1.0.0",
-    "ssr-common-utils": "^6.2.10"
+    "ssr-serialize-javascript": "^6.0.0",
+    "ssr-types": "^6.2.3"
   },
-  "devDependencies": {
-    "ssr-types": "^6.0.0"
+  "peerDependencies": {
+    "ssr-plugin-react": "workspace:^6.2.59",
+    "ssr-plugin-vue": "workspace:^6.0.0",
+    "ssr-plugin-vue3": "workspace:^6.0.0"
   }
 }

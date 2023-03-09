@@ -1,14 +1,16 @@
 import { createProxyMiddleware } from 'http-proxy-middleware'
 import * as koaConnect from 'koa2-connect'
-import { judgeFramework, judgeServerFramework } from '../cwd'
+import { join } from 'path'
+import { getCwd, judgeFramework, judgeServerFramework } from '../cwd'
 import { loadConfig } from '../loadConfig'
 
-function onProxyReq (proxyReq: any, req: any) {
+function onProxyReq(proxyReq: any, req: any) {
   Object.keys(req.headers).forEach(function (key) {
     proxyReq.setHeader(key, req.headers[key])
   })
 }
 
+const cwd = getCwd()
 const kc = koaConnect.default || koaConnect
 const getDevProxyMiddlewaresArr = async () => {
   const { fePort, proxy, isDev, https, proxyKey, isVite } = loadConfig()
@@ -16,7 +18,7 @@ const getDevProxyMiddlewaresArr = async () => {
   const isExpress = serverFramework === 'ssr-plugin-nestjs'
   const proxyMiddlewaresArr: any[] = []
 
-  function registerProxy (proxy: any) {
+  function registerProxy(proxy: any) {
     for (const path in proxy) {
       const options = proxy[path]
       // 如果底层服务端框架是基于 express的。则不需要用 koaConnect 转换为 koa 中间件
@@ -35,7 +37,7 @@ const getDevProxyMiddlewaresArr = async () => {
 
       // 本地开发请求走 vite 接管 前端文件夹请求
       const { createServer } = require('vite')
-      const { clientConfig } = require(framework)
+      const { clientConfig } = require(join(cwd, './node_modules/' + framework + '/cjs/index.js'))
       const viteServer = await createServer(clientConfig)
       proxyMiddlewaresArr.push(isExpress ? viteServer.middlewares : kc(viteServer.middlewares))
     } else {
@@ -64,6 +66,4 @@ const getDevProxyMiddlewaresArr = async () => {
   return proxyMiddlewaresArr
 }
 
-export {
-  getDevProxyMiddlewaresArr
-}
+export { getDevProxyMiddlewaresArr }
