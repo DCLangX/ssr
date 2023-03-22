@@ -145,9 +145,8 @@ const serverRender = async (ctx: ISSRContext, config: IConfig) => {
       />
     )
     // with jsx type error, use createElement here
-    // @ts-expect-error
     const ele = createElement(
-      StaticRouter,
+      StaticRouter as unknown as any,
       {
         location: ctx.request.url,
         basename: prefix === '/' ? undefined : prefix,

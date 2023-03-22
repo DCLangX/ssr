@@ -1,6 +1,6 @@
 <template>
   <div class="swiperContainer">
-    <Swiper ref="mySwiper">
+    <!-- <Swiper ref="mySwiper">
       <swiper-slide v-for="val in data[0].itemMap" :key="val.img" class="sliderContainer" @click="toDetail">
         <img :src="val.img" class="carouselImg">
         <div class="sliderDescContainer">
@@ -10,19 +10,19 @@
         </div>
       </swiper-slide>
       <template #pagination class="swiper-pagination" />
-    </Swiper>
+    </Swiper> -->
   </div>
 </template>
 
 <script setup lang="ts">
 import { useRouter } from 'vue-router'
 import { ItemMapArr } from '~/typings/data'
-import 'swiper/swiper-bundle.css'
-import { Swiper, SwiperSlide } from 'swiper/vue'
-import { Swiper as SwiperCore, Autoplay, Pagination } from 'swiper'
-import 'swiper/components/pagination/pagination.less'
+// import 'swiper/swiper-bundle.css'
+// import { Swiper, SwiperSlide } from 'swiper/vue'
+// import { Swiper as SwiperCore, Autoplay, Pagination } from 'swiper'
+// import 'swiper/components/pagination/pagination.less'
 const Router = useRouter()
-SwiperCore.use([Autoplay, Pagination])
+// SwiperCore.use([Autoplay, Pagination])
 defineProps<{
   data: ItemMapArr[]
 }>()
